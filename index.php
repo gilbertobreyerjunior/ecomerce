@@ -1,19 +1,36 @@
 <?php 
 
 require_once("vendor/autoload.php");
+//Usamos os seguintes namespaces
+use \Slim\Slim;
+//Iremos fazer o use da classe page que estamos usando agora
+use \Hcode\Page;
 
-$app = new \Slim\Slim(); //criando a instancia do slim
+
+$app = new Slim(); //criando a instancia do slim estamos criando uma nova aplicacao
+
 
 $app->config('debug', true); //deixando no modo debug
 
+
+
+//Nossas rotas
+
 $app->get('/', function() {
-    
-	$sql = new Hcode\DB\Sql();
+	
+	//instanciamos a classe Page e entao ira chamar o construct e ira adicionar o header a tela
 
-	$results = $sql->select("SELECT * FROM  tb_users");
+	$page = new Page();
+//quando chamar o setTpl("index") passando o nome do template que o index ele ira adicionar o arquivo que tem o h1, apos isso ira chamar o destruct que tem o footer que sera incluido na pagina
+	$page->setTpl("index");
+
+	//Testes
+	// $sql = new Hcode\DB\Sql();
+
+	// $results = $sql->select("SELECT * FROM  tb_users");
 
 
-	echo json_encode($results);
+	// echo json_encode($results);
 
 });
 
