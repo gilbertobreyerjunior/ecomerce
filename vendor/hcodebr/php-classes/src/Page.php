@@ -20,13 +20,14 @@ class Page {
     //As variaveis irao vir com a rota, dependendo da rota que iremos chamando no slim e que iremos passar os dados para a classe page
                              //iremos receber algumas opcoes da classe
 //criamos o metodo magico construtor, passamos como parametro no metodo construtor que serao opcoes da classe sera um array
-    public function __construct($opts = array()){
+                                            //passamos um segundo parametro dentro do construct uma variavel$tpl_dir que recebe o caminho da nossa  views
+public function __construct($opts = array(), $tpl_dir = "/views/"){
 
 $this->options = array_merge($this->defaults, $opts); // com o array merge ira mesclar dois arrays siginifica juntar dois arrays, ai  temos um segredo pois iremos colocar os dois arrays para realizar a mesclagem, lembrando que o ultimo array ira sobrescrever os anteriores, entao queremos com que o que a pessoa tenha informado no construct sobrescreva no default
 
 
         $config = array(
-         "tpl_dir"  => $_SERVER["DOCUMENT_ROOT"]."/views/", //A partir do nosso diretorio root do nosso projeto procura a pasta tal se não ele ira procurar a partir desse repositorio  das nossas classes, entao usamos a variavel de ambiente no $_SERVER[DOCUMENT_ROOT] ele ira trazer onde esta a pasta o diretorio root do nosso servidor, apos iremos falar onde esta o template concatenamos com "/views/"  
+         "tpl_dir"  => $_SERVER["DOCUMENT_ROOT"].$tpl_dir, //A partir do nosso diretorio root do nosso projeto procura a pasta tal se não ele ira procurar a partir desse repositorio  das nossas classes, entao usamos a variavel de ambiente no $_SERVER[DOCUMENT_ROOT] ele ira trazer onde esta a pasta o diretorio root do nosso servidor, apos iremos falar onde esta o template concatenamos com o $tpl_dir 
          "cache_dir" => $_SERVER["DOCUMENT_ROOT"]."/views-cache/", //e apartir da parte do cache podemos usar  views-cache,  entao usamos a variavel de ambiente no $_SERVER[DOCUMENT_ROOT] ele ira trazer onde esta a pasta o diretorio root do nosso servidor
             "debug" => false // set to false to improve the speed
            );
