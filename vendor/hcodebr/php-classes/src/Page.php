@@ -13,6 +13,9 @@ class Page {
     private $options = [];
     //iremos ter algumas opcoes padroes uns defaults que sera um array
     private $defaults = [
+//por padrão estamos falando que o header e o footer são true
+        "header"=>true,
+        "footer"=>true,        
 //iremos passar um array dados
         "data"=>[] // o array data sera vaziu por padrão, então se sobrescrevermos esse data, ele ira criar ou ira passar para o nosso template, 
     ];
@@ -50,7 +53,8 @@ $this->options = array_merge($this->defaults, $opts); // com o array merge ira m
 
 
 //iremos desenhar o template na tela, o draw espera o nome do arquivo que queremos chamar 
-$this->tpl->draw("header");
+//Fazemos um if se isso aqui o $option com header for true entao adicionamos desenhamos o header no template
+if ($this->options["header"] === true) $this->tpl->draw("header");
                    
 
 }
@@ -93,8 +97,9 @@ private function setData($data = array())   {
    public function __destruct() {
 
 //quando essa classe sair da memoria do php, iremos adicionar o footer 
+//Fazemos um if se isso aqui o $option com footer for true entao adicionamos desenhamos o footer no template
 
-    $this->tpl->draw("footer");
+if($this->options["footer"] === true)$this->tpl->draw("footer");
 
 
     }
