@@ -92,6 +92,114 @@ $_SESSION[User::SESSION] = NULL;
 }
 
 
+//essa funcao ira ler todos os dados da tabela
+public static function listAll()
+{
+
+$sql = new Sql();
+//o usuario precisa de uma pessoa para ser criado ele tem um idperson dentro da tabela de usuarios onde temos o e-mail telefone  
+                                                //iremos unir as informacoes com o INNER JOIN 
+                                                //tabela b  utilizamos o USING se tiver o mesmo nome de campo idperson que tem nas duas tabelas e o ODER BY pela nome da pessoa  
+return $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) ORDER BY b.desperson");
+
+}
+
+
+//criamos um metodo para salvar os nossos dados no banco
+public function save()
+{
+
+
+    $sql = new Sql();
+
+    //iremos chamar uma procedure, pois esssa procedure ira chamar uma pessoa primeiro e entao precisamos saber o id dessa pessoa para poder inserir na tabela de usuarios porque ele precisa do idpessoa vamos pegar o idusuario que retornou e fazer um select com os dados que estão lá no banco de dados agora, a data de cadastro, idusuario  iremos juntar tudo e trazer de volta para isso iremos precisar de uma procedure      
+
+    $results = $sql->select(" CALL sp_users_save(:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
+       ":desperson" =>$this->getdesperson(),
+        ":deslogin"=>$this->getdeslogin(),
+        ":despassword"=>$this->getdespassword(),
+        ":desemail"=>$this->getdesemail(),
+        ":nrphone"=>$this->getnrphone(),
+        ":inadmin"=>$this->getinadmin()
+
+
+
+    ));
+
+
+//so nos interessa a primeira linha do resultado, iremos setar no proprio objeto
+    $this->setData($results[0]);
+
+}
+
+
+//iremos criar um metodo para pegar o usuario
+public function get($iduser)
+{
+
+    //iremos carregar esse usuario do banco
+
+    $sql = new Sql();
+
+    $results = $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) WHERE a.iduser = :iduser
+    ", array (
+        ":iduser"=>$iduser
+
+
+    ));
+
+    $this->setData($results[0]);
+
+}
+
+//iremos criar um metodo update
+
+    public function update() {
+
+        $sql = new Sql();
+
+
+    //iremos chamar uma procedure, pois esssa procedure ira chamar uma pessoa primeiro e entao precisamos saber o id dessa pessoa para poder inserir na tabela de usuarios porque ele precisa do idpessoa vamos pegar o idusuario que retornou e fazer um select com os dados que estão lá no banco de dados agora, a data de cadastro, idusuario  iremos juntar tudo e trazer de volta para isso iremos precisar de uma procedure      
+
+    $results = $sql->select(" CALL sp_usersupdate_save(:iduser, :desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
+       ":iduser"=>$this->getiduser(),
+        ":desperson" =>$this->getdesperson(),
+         ":deslogin"=>$this->getdeslogin(),
+         ":despassword"=>$this->getdespassword(),
+         ":desemail"=>$this->getdesemail(),
+         ":nrphone"=>$this->getnrphone(),
+         ":inadmin"=>$this->getinadmin()
+ 
+ 
+ 
+     ));
+ 
+ 
+ //so nos interessa a primeira linha do resultado, iremos setar no proprio objeto
+     $this->setData($results[0]);
+    }
+
+
+    //criamos o metodo delete
+
+    public function delete()
+    {
+
+
+        $sql = new Sql();
+        
+        $sql->query("CALL sp_users_delete(:iduser)", array(
+        ":iduser"=>$this->getiduser()
+
+
+
+        ));
+
+
+
+    }
+
+
 }
 
 
