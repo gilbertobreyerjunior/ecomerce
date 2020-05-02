@@ -42,7 +42,7 @@ $app->get('/', function() {
 
 
 $app->get('/admin', function() {
-	
+	//verificando se o usuario esta logado com um metodo estatico
 	User::verifyLogin();
 
 
@@ -56,7 +56,7 @@ $app->get('/admin', function() {
 });
 
 
-
+//rota para acessar o login
 
 $app->get('/admin/login', function() {
 	
@@ -75,11 +75,11 @@ $app->get('/admin/login', function() {
 });
 
 
-
+//criamos uma rota post para enviar
 $app->post('/admin/login', function() {
 	//Iremos validar o login criamos uma nova classe que o nosso model do nosso Usuario, e iremos criar um metodo estatico chamado login ele ira receber o post do login do formulario login com o usuario e senha se não ocorrer erro podemos redirecionar para a nossa homepage da nossa administracao fazendo um header(Locacion: /admin )
 	User::login($_POST["login"], $_POST["password"]);
-
+//sera redicerionado para a pagina admin
 	header("Location: /admin");
 //E paramos a execução aqui
 	exit;
@@ -88,7 +88,7 @@ $app->post('/admin/login', function() {
 
 
 });
-
+//rota para logout
 $app->get('/admin/logout', function() {
 
 User::logout();
