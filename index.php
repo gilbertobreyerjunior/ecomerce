@@ -133,6 +133,7 @@ $app->get("/admin/users/:iduser/delete", function($iduser) {
 	User::verifyLogin();
 
 	$user = new User();
+	//iremos trazer tudo do banco para alterar
 	$user->get((int)$iduser);
 	$user->delete();
 	header("Location: /admin/users");
@@ -155,6 +156,7 @@ $app->get('/admin/users/:iduser', function($iduser) { //iremos receber na funcao
 
 $user = new User();
 
+//convertemos para numerico para ter certeza que e numero
 
 $user->get((int)$iduser);
 
@@ -215,7 +217,104 @@ $_POST["inadmin"] = (isset($_POST["inadmin"]))?1:0;
 	exit;
 	});
 
-//para excluirmos
+//iremos criar a rota do esqueceu a senha
+$app->get("/admin/forgot", function()
+{
+//ela nao tera o header e o footer padrao do sistema
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false
+
+	]); //abrindo com o template forgot
+		$page->setTpl("forgot");
+});
+//rota que sera mandada o nosso formulario de recuperacao de email
+$app->post("/admin/forgot", function(){
+
+//iremos criar um metodo que saiba receber todas as verificacoes,
+	$user = User::getForgot($_POST["email"]);
+
+//fazemos um redirect informando para a pessoa que o email foi mandado com sucesso
+	header("Location: /admin/forgot/sent");
+	exit;
+
+
+
+});
+
+$app->get("/admin/forgot/sent", function(){
+
+//iremos renderizar o template do sent
+//ela nao tera o header e o footer padrao do sistema
+$page = new PageAdmin([
+	"header"=>false,
+	"footer"=>false
+
+]); //abrindo com o template forgot
+	$page->setTpl("forgot-sent");
+
+
+
+});
+//criamos a rota para resetar a senha
+
+$app->get("/admin/forgot/reset", function(){
+
+//iremos recuperar de qual usuario e o codigo
+$user = User::validForgotDecrypt($_GET["code"]);
+
+//iremos renderizar o template do sent
+//ela nao tera o header e o footer padrao do sistema
+$page = new PageAdmin([
+	"header"=>false,
+	"footer"=>false
+
+]); //abrindo com o template forgot //passamos um array com o name desse usuario e o codigo que vem criptografado
+	$page->setTpl("forgot-reset", array(
+		"name"=>$user["desperson"],
+		"code"=>$_GET["code"]          //pois ele ira precisar validar tudo isso na proxima pagina 
+
+	));
+
+
+});
+
+//precisamos a rota post para o forgot-reset iremos recuperar por post
+
+$app->post("/admin/forgot/reset", function(){
+//iremos verificar novamente para impedir se houve alguma brecha de segurança nessa transição
+$forgot = User::validForgotDecrypt($_POST["code"]);
+//o metodo que ira salvar que ira falar para o banco de dados que essa recuperação, já foi usado, para não recuperar novamente, mesmo que esteja dentro dessa uma hora  
+User::setForgotUsed($forgot["idrecovery"]);
+
+//agora iremos carregar o objeto usuario
+$user = new User();
+$user->get((int)$forgot["iduser"]);
+
+//iremos criptografar a senha
+						//primeiro parametro qual a senha que queremos criptografar, segundo parametro o modo de codificacao, terceiro parametro e o cost quanto de processamento voce quer utilizar no servidor para gerar essa criptografia, quanto mais mais segura ira ficar a criptografia, se tiver mais mais processamento ele ira utilizar para fazer essa criptografia   para sua senha para ser criptografada
+$password = password_hash($_POST["password"], PASSWORD_DEFAULT, [
+"cost"=>12
+
+]);
+
+
+//iremos chamar o metodo setPassword pois precisamos colocar o hash dessa senha, entao iremos informar a senha para o metodo mas ele ira gerar, ele ira salvar o hash no banco de dados 
+      //passamos como parametro o $password que iremos colocar para salvar
+$user->setPassword($password);
+
+
+$page = new PageAdmin([
+	"header"=>false,
+	"footer"=>false
+
+]); //abrindo com o template forgot //passamos um array com o name desse usuario e o codigo que vem criptografado
+	$page->setTpl("forgot-reset-success");
+
+
+});
+
+
 
 
 
