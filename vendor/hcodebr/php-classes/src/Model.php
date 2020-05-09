@@ -29,7 +29,8 @@ switch ($method)
 //se for get ira fazer alguma coisa
      case "get": 
         //iremos procurar esse campo dentro do values em nosso fieldname se ele encontrar da um return
-        return $this->values[$fieldName];
+                    //Iremos fazer uma validação: se foi definido se existe entao retorna ele, se não foi definido ? pode retornar nulo
+        return (isset($this->values[$fieldName])) ? $this->values[$fieldName] : NULL;
      break;
 //se for o set
      case "set": // iremos procurar dentro do values em nosso fieldname e iremos aplicar o valor dentro do args o primeiro argumento na posicao 0
