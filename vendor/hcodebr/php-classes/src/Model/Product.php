@@ -21,6 +21,33 @@ return $sql->select("SELECT * FROM tb_products ORDER BY desproduct");
 }
 
 
+//iremos criar um metodo para criar um objeto chamar o getvalues e retornar esses objetos tratados
+public static function checkList($list){ //fazendo uma checagem na lista de produtos
+
+//percorre cada linha da minha lista
+//passamos o atrib com & comercial para mnipular o mesmo atrib na memoria
+
+                //como adicionamos o & comercial ao row ele foi alterado por conta do & comercial e tambem alterou dentro do array list
+    foreach($list as &$row){
+
+        $p = new Product();
+        $p->setData($row);
+        $row = $p->getValues(); //nesse momento passou pelo getvalues  que ira chamar e verificar se possui a foto ou nao
+
+
+    }
+
+    //agora iremos retornar o arraylist com os dados de cada produto já formatado
+    return $list;
+}
+
+
+
+//criamos um metodo estatico para formatar o preço
+
+
+
+
 //criamos o metodo save
 
 public function save()
