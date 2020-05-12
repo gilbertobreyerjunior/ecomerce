@@ -150,7 +150,7 @@ $app->get("/admin/categories/:idcategory/products", function($idcategory){
 			'productsNotRelated'=>$category->getProducts(false) //traz os produtos que não estão relcionados
 
 		]);
-
+ 
 
 });
 
