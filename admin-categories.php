@@ -125,10 +125,14 @@ exit;
 
 			
 
-			//iremos criar a rota para a categoria
-								  //iremos passar o id da categoria dentro da function
-								  //essa rota ira retornar uma pagina do site 
-	$app->get("/categories/:idcategory", function($idcategory){
+	
+
+//iremos criar uma rota para acessar produtos categorias
+$app->get("/admin/categories/:idcategory/products", function($idcategory){
+
+
+		//verificando se o usuario esta logado com um metodo estatico	
+		User::verifyLogin();
 
 		//iremos recuperar o id da funcao com get
 
@@ -138,17 +142,17 @@ exit;
 
 		//iremos usar a classe de paginas do site 
 
-		$page = new Page();
+		$page = new PageAdmin();
 		//iremos passar os dados dessa categoria
-		$page->setTpl("category", [
+		$page->setTpl("categories-products", [
 			'category'=>$category->getValues(),
-			'products'=>[]
+			'productsRelated'=>$category->getProducts(), //traz os produtos que estão relacionados
+			'productsNotRelated'=>$category->getProducts(false) //traz os produtos que não estão relcionados
 
 		]);
 
-	});
 
-
+});
 
 
 

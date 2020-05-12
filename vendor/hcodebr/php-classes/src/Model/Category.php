@@ -107,9 +107,54 @@ file_put_contents($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . "views" . DI
 
 }
 
+//iremos criar um metodo que traga todos os produtos //passamos um booleano para saber se queremos trazer os produtos que estão relacionados com essa categoria  ou os que não estão relacionados com essa categoria 
+public function getProducts($related = true){
+
+
+$sql = new Sql();
+
+//se for produtos relacionados
+if ($related === true){
+
+//ira retornar do banco os produtos que estão relacionados a categoria
+  return $sql->select("
+       SELECT * FROM tb_products WHERE idproduct IN(
+
+        SELECT a.idproduct
+        FROM tb_products a
+        INNER JOIN tb_productscategories b ON a.idproduct = b.idproduct
+        WHERE b.idcategory = :idcategory
+        
+        );
+        //iremos passar o nosso id no proprio objeto instanciado
+    ", [
+        ':idcategory'=>$this->getidcategory()
+    ]);
+
+} else {
+
+    //ira retornar do banco os produtos que não estão relacionados a categoria
+     return $sql->select("SELECT * FROM tb_products WHERE idproduct  NOT IN(
+
+        SELECT a.idproduct
+        FROM tb_products a
+        INNER JOIN tb_productscategories b ON a.idproduct = b.idproduct
+        WHERE b.idcategory = :idcategory
+        
+        );
+        ", [
+
+        ':idcategory'=>$this->getidcategory()
+
+        ]);
 
 
 }
+
+    }
+         }
+
+
 
    
 

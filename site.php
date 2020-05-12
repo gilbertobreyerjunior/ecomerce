@@ -28,4 +28,33 @@ $products = Product::listAll();
 
 });
 
+
+
+		//iremos criar a rota para a categoria
+								  //iremos passar o id da categoria dentro da function
+								  //essa rota ira retornar uma pagina do site 
+								  $app->get("/categories/:idcategory", function($idcategory){
+
+
+		
+
+									//iremos recuperar o id da funcao com get
+							
+									$category = new Category();
+									//fazemos um cast para int para ter certeza que isso é um numero 
+									$category->get((int)$idcategory);
+							
+									//iremos usar a classe de paginas do site 
+							
+									$page = new Page();
+									//iremos passar os dados dessa categoria
+									$page->setTpl("category", [
+										'category'=>$category->getValues(),
+										'products'=>[]
+							
+									]);
+							
+								});
+							
+
 ?>
