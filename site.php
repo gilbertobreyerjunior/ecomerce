@@ -2,6 +2,7 @@
 
 use \Hcode\Page;
 use \Hcode\Model\Product;
+use \Hcode\Model\Category;
 
 $app->get('/', function() {
 	//iremos trazer todos os produtos que estao no banco
@@ -50,7 +51,9 @@ $products = Product::listAll();
 									//iremos passar os dados dessa categoria
 									$page->setTpl("category", [
 										'category'=>$category->getValues(),
-										'products'=>[]
+										//trazendo a lista dos nossos produtos, se eu não passar nada dentro do get ira ser true e ira trazer todos os produtos relacionados as categorias
+												//invocamos o metodo estatico para verificar cada foto, se foi feito o upload
+										'products'=>Product::checkList($category->getProducts())
 							
 									]);
 							

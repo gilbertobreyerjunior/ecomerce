@@ -152,6 +152,58 @@ if ($related === true){
 }
 
     }
+    //adicionando produto
+                            //Passamos a classe dizendo que e do tipo produto estamos forçando a passagem do parametro
+public function addProduct(Product $product)
+{
+
+
+$sql = new Sql();
+
+$sql->query("INSERT INTO tb_productscategories (idcategory, idproduct) VALUES(:idcategory, :idproduct)", [
+    ':idcategory'=>$this->getidcategory(),
+    ':idproduct'=>$product->getidproduct()
+
+
+]);
+
+
+
+}
+
+//removendo produto
+
+   
+                            //Passamos a classe dizendo que e do tipo produto estamos forçando a passagem do parametro
+public function removeProduct(Product $product)
+{
+                            
+                            
+$sql = new Sql();
+                            
+$sql->query("DELETE FROM tb_productscategories WHERE idcategory = :idcategory AND idproduct = :idproduct", [
+':idcategory'=>$this->getidcategory(),
+':idproduct'=>$product->getidproduct()
+                            
+                            
+]);
+                            
+                            
+                            
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
          }
 
 

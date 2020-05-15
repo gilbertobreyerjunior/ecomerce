@@ -3,6 +3,7 @@
 use \Hcode\PageAdmin;
 use \Hcode\Model\User;
 use \Hcode\Model\Category;
+use \Hcode\Model\Product;
 use \Hcode\Page;
 
 $app->get("/admin/categories", function(){
@@ -96,7 +97,7 @@ $app->get("/admin/categories/:idcategory", function($idcategory) {
 	});
 
 
-	$app->POST("/admin/categories/:idcategory", function($idcategory) {
+	$app->post("/admin/categories/:idcategory", function($idcategory) {
 
 
 	//verificando se o usuario esta logado com um metodo estatico
@@ -153,6 +154,71 @@ $app->get("/admin/categories/:idcategory/products", function($idcategory){
  
 
 });
+
+
+
+
+
+//Para adicionar produtos
+
+																			//primeiro recebemos o id da categoria, apos o id do produto
+$app->get("/admin/categories/:idcategory/products/:idproduct/add", function($idcategory, $idproduct){
+
+
+	//verificando se o usuario esta logado com um metodo estatico	
+	User::verifyLogin();
+
+	//iremos recuperar o id da funcao com get
+
+	$category = new Category();
+	//fazemos um cast para int para ter certeza que isso é um numero 
+	$category->get((int)$idcategory);
+
+	$product = new Product();
+
+
+		//fazemos um cast para int para ter certeza que isso é um numero 
+	$product->get((int)$idproduct);
+
+//esse metodo ja ira receber uma classe instanciada do produto
+	$category->addProduct($product);
+//Ira redirecionar de volta para a lista da relação dos produtos com a categoria
+	header("Location: /admin/categories/".$idcategory."/products");
+exit;
+
+});
+
+
+
+//para remover
+//primeiro recebemos o id da categoria, apos o id do produto
+$app->get("/admin/categories/:idcategory/products/:idproduct/remove", function($idcategory, $idproduct){
+
+
+//verificando se o usuario esta logado com um metodo estatico	
+User::verifyLogin();
+																			
+//iremos recuperar o id da funcao com get
+																			
+$category = new Category();
+//fazemos um cast para int para ter certeza que isso é um numero 
+$category->get((int)$idcategory);
+																			
+$product = new Product();
+																			
+																			
+//fazemos um cast para int para ter certeza que isso é um numero 
+$product->get((int)$idproduct);
+																			
+//esse metodo ja ira receber uma classe instanciada do produto
+$category->removeProduct($product);
+//Ira redirecionar de volta para a lista da relação dos produtos com a categoria
+header("Location: /admin/categories/".$idcategory."/products");
+exit;
+																			
+});
+
+
 
 
 
