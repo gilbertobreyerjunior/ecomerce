@@ -152,6 +152,51 @@ if ($related === true){
 }
 
     }
+
+
+//funcao para paginacao
+                            //Passamos por parametro no primeiro a pagina, e o segundo quantos itens por pagina
+public function getProductsPage($page = 1, $itemsPerPage = 3)
+{
+        //pega o page que colocamos menos 1 vezes itens por page, a regra é, se eu tiver na pagina 1  1-1 0, 0 vezes 3 0
+        //entao primeira pagina começa no 0, se eu tiver na pagina 2  2-1 1 1 vezes 3 3 pulou o 0 pulou o 1 pulo o 2 começa no registro 3 e me traga 3
+    $start = ($page-1)*$itemsPerPage;
+
+    $sql = new Sql();
+    $results = $sql->select("
+    SELECT SQL_CALC_FOUND_ROWS *
+    FROM tb_products a 
+    INNER JOIN tb_productscategories b ON a.idproduct = b.idproduct
+    INNER JOIN tb_categories c ON c.idcategory = b.idcategory
+    WHERE c.idcategory = :idcategory
+    LIMIT $start, $itemsPerPage;
+
+", [
+    ':idcategory'=>$this->getidcategory()
+
+
+]);
+$resultTotal = $sql->select("SELECT FOUND_ROWS()AS nrtotal;");
+
+//iremos retornar um array para retornar as informacoes
+return [
+    //invocamos o metodo checkList para verificar cada foto, se foi feito o upload
+                                //passamos como parametro os dados do nosso produto
+    'data'=>Product::checkList($results),
+    // que e o total quantos registros vieram //passamos a partir de que posicao queremos que e primeira linha e qual a coluna no segundo parametro
+    'total'=>$resultTotal[0]["nrtotal"],
+    //retornar quantas paginas ele gerou usamos ceil e uma funcao do php que converte arendondando para cima, se tivermos 11 registros e tivermos 10 por pagina, entao ele tem que gerar 10 por pagina, tem que gerar uma com 10, e uma pagina com 1 registro   
+                                                //iremos dividir itens por pagina
+    'pages'=>ceil($resultTotal[0]["nrtotal"] / $itemsPerPage)
+
+];
+
+
+
+}
+
+
+
     //adicionando produto
                             //Passamos a classe dizendo que e do tipo produto estamos forçando a passagem do parametro
 public function addProduct(Product $product)
