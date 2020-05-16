@@ -217,6 +217,40 @@ $this->checkPhoto();
 
 }
 
+
+//criamos o metodo para trazer pela url
+
+public function getFromURL($desurl){
+
+$sql = new Sql();
+//ira trazer as linhas
+$rows = $sql->select("SELECT * FROM tb_products WHERE desurl = :desurl LIMIT 1", [
+
+':desurl'=>$desurl
+
+]);
+
+//iremos trazer as informacoes da primeira linha
+$this->setData($rows[0]);
+
+
+}
+
+
+public function getCategories(){
+
+    $sql = new Sql();
+
+    return $sql->select(" 
+    SELECT * FROM tb_categories a INNER JOIN tb_productscategories b ON a.idcategory = b.idcategory WHERE b.idproduct = :idproduct
+    ",  [
+
+        ':idproduct'=>$this->getidproduct()
+
+    ]);
+
+}
+
 }
 
    

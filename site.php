@@ -81,6 +81,31 @@ $products = Product::listAll();
 									]);
 							
 								});
+
+
+$app->get("/products/:desurl", function($desurl){
+
+
+	$product = new Product();
+
+	//fazemos um getfrom url pegar a url carregamos do proprio objeto 
+	$product->getFromURL($desurl);
+
+	$page = new Page();
+//O proprio objeto pega os valores e passa para o nosso template
+
+//o setTPL ira desenhar na tela os detalhes do produto, precisamos passar no layout os produtos e a categoria dos produtos
+	$page->setTpl("product-detail", [
+		'product'=>$product->getValues(),
+		//para trazer quais as categorias dos produtos
+		'categories'=>$product->getCategories()
+
+
+		
+
+	]);
+
+});
 							
 
 ?>
