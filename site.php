@@ -3,6 +3,8 @@
 use \Hcode\Page;
 use \Hcode\Model\Product;
 use \Hcode\Model\Category;
+use \Hcode\Model\Cart;
+
 
 $app->get('/', function() {
 	//iremos trazer todos os produtos que estao no banco
@@ -106,6 +108,16 @@ $app->get("/products/:desurl", function($desurl){
 	]);
 
 });
-							
+
+
+$app->get("/cart", function(){
+
+	$cart = Cart::getFromSession();
+
+$page = new Page();
+
+$page->setTpl("cart");
+
+});
 
 ?>

@@ -21,6 +21,69 @@ class User extends Model {
     const SECRET_IV = "HcodePhp7_Secret_IV";
 
 
+//iremos verificar se essa sessao existe, se o id do usuario e maior que 0
+public static function getFromSession(){
+
+    $user = new User();
+
+
+//se existir essa sessao, e for inteiro esse id e esse id for maior que 0
+    if (isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0){
+//entao iremos conseguir retornar o novo usuario
+
+        $user->setData($_SESSION[User::SESSION]);
+
+    }
+
+
+    return $user;
+
+} 
+
+
+//metodo para verificar se o usuario esta logado
+public static function checkLogin($indadmin = true){
+
+//iremos verificar se a sessao do usuario nao esta definida, se nao esta definida nao esta logado, ou se esta definida mas esta vazia
+
+    if (
+
+    !isset($_SESSION[User::SESSION])
+    || // ou se ela for falsa
+    !$_SESSION[User::SESSION]
+    || // ou se o iduser nao for maior que 0
+    !(int)$_SESSION[User::SESSION]["iduser"] > 0
+
+    ){
+
+//nao esta logado
+        return false;
+
+    }else { //estou fazendo uma verificacao de uma rota da administracao, se eu estiver fazendo isso 
+//esse if ira acontecer so se ele acessar uma rota de administrador
+        if ($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin']){
+
+            return true;
+//se nao se, ele esta logado mas nao necessariamente precisa ser um administrador
+        } else if($indadmin === false){
+
+                //esta logado também
+
+                return true;
+
+
+        }else { //nao esta logado
+
+                return false;
+
+        }
+
+    }
+
+}
+
+
+
 public static function login($login, $password)
 {
 
@@ -74,20 +137,12 @@ public static function verifyLogin($inadmin = true){
 
 
 
-    if (  //se essa sessao nao for definida
+    if (User::checkLogin($indadmin))  //se essa sessao nao for definida
 
-        !isset($_SESSION[User::SESSION])
-|| // ou se ela for falsa
-!$_SESSION[User::SESSION]
-|| // ou se o iduser nao for maior que 0
-!(int)$_SESSION[User::SESSION]["iduser"] > 0
-||// ou se o usuario nao for admin
-(bool)$_SESSION[User::SESSION]["inadmin"] !== $inadmin
-    )
-    {   //se nao for definida a sessao sera redirecionada para a tela de login
+      //se nao for definida a sessao sera redirecionada para a tela de login
             header("Location: /admin/login");
             exit;
-    }
+   
 }
 
 //criamos o metodo de logout para limpar a session iremos anular a sessao
