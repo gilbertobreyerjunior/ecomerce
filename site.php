@@ -116,8 +116,82 @@ $app->get("/cart", function(){
 
 $page = new Page();
 
-$page->setTpl("cart");
+$page->setTpl("cart", [ //passo as informacoes do meu carrinho
+
+	'cart'=>$cart->getValues(),
+	'products'=>$cart->getProducts()
+
+]);
 
 });
+
+						
+$app->get("/cart/:idproduct/add", function($idproduct) {
+
+
+		$product = new Product();
+		$product->get((int)$idproduct);
+
+		//recuperamos o carrinho
+		$cart = Cart::getFromSession();
+
+
+			//se for definido informado o get do   qtd, entao a minha variavel qtd sera o cast do int do campo qtd, se nao e o mesmo, ira adicionar a quantidade de 1 
+			$qtd = (isset($_GET['qtd'])) ? (int)$_GET['qtd'] : 1;
+//assim ele chama o metodo quantas vezes ele for necessario ser executado, se nao passar uma vez, pelo menos uma vez ele ira adicionar
+			for ($i = 0; $i < $qtd; $i++){
+
+//inserimos o metodo para adicionar ao carrinho
+				$cart->addProduct($product);
+			}
+
+			header("Location: /cart");
+			exit;
+
+});
+
+
+
+	//colocamos na rota minus para remover 1
+	$app->get("/cart/:idproduct/minus", function($idproduct) {
+
+
+	$product = new Product();
+	$product->get((int)$idproduct);
+					
+	//recuperamos o carrinho
+	$cart = Cart::getFromSession();
+					
+	//inserimos o metodo para adicionar ao carrinho
+	$cart->removeProduct($product);
+
+	header("Location: /cart");
+	exit;	
+
+});
+
+//para remover todos
+
+//colocamos na rota minus para remover 1
+$app->get("/cart/:idproduct/remove", function($idproduct) {
+
+
+$product = new Product();
+$product->get((int)$idproduct);
+					
+//recuperamos o carrinho
+$cart = Cart::getFromSession();
+					
+//inserimos o metodo para adicionar ao carrinho //passamos true para remover todos
+$cart->removeProduct($product, true);
+
+
+header("Location: /cart");
+exit;
+
+					
+	});
+					
+
 
 ?>

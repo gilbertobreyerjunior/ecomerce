@@ -3,7 +3,6 @@ namespace Hcode\Model;
 use \Hcode\DB\Sql;
 use \Hcode\Model;
 use \Hcode\Mailer;
-use \Hcode\Product;
 use \Hcode\Model\User;
 use \Hcode\Model\Cart;
 
@@ -150,10 +149,80 @@ public function save(){
 }
 
 
+//metodo para adicionar ao carrinho
+
+public function addProduct(Product $product){
+
+    $sql = new Sql();
+
+    $sql->query("INSERT INTO tb_cartsproducts (idcart, idproduct) VALUES(:idcart, :idproduct)", [
+        ':idcart'=>$this->getidcart(),
+        ':idproduct'=>$product->getidproduct()
+
+    ]);
+
+}
+
+
+//metodo para remover o produto o carinho
+                                                //adicionamos como parametro o $all false porque iremos deixar padrão de o cliente não remover completamente todos os mesmos produtos de um carrinho, e o normal e diminuir a quantidade de produtos
+public function removeProduct(Product $product, $all = false){
+
+
+    $sql = new Sql();
+
+//se all = todos deste produto for igual a true entao faça
+
+if ($all)
+ {
+                                                //usamos a funcao do Sql NOW para pegar a data e hora do momento,
+                                                //o que quer dizer todos o produtos com esse id e neste carrinho serao removidos neste momento
+    //aqui ira remover todos
+      $sql->query("UPDATE tb_cartsproducts SET dtremoved = NOW() WHERE idcart = :idcart AND idproduct = :idproduct AND dtremoved IS NULL",[
+        
+        ':idcart'=>$this->getidcart(),
+        ':idproduct'=>$product->getidproduct()
+    
+    ]);
+
+    } else { //se não
+//aqui ira remover 1 produto
+        $sql->query("UPDATE tb_cartsproducts SET dtremoved = NOW() WHERE idcart = :idcart AND idproduct = :idproduct AND dtremoved IS NULL LIMIT 1",[
+        
+            ':idcart'=>$this->getidcart(),
+            ':idproduct'=>$product->getidproduct()
+        ]);
+
+    }
 
 
 
+}
 
+//quero pegar todos os produtos que estao dentro desse carrinho
+
+public function getProducts()
+{
+
+    $sql = new Sql();
+                                                                                            //caso tenha mais de um produto com o mesmo tipo soma com o COUNT ele ira pegar no total, e também ira somar o valor total com o SUM
+    $rows = $sql->select("                                                                   
+    SELECT b.idproduct, b.desproduct , b.vlprice, b.vlwidth, b.vlheight, b.vllength, b.vlweight, b.desurl, COUNT(*) AS nrqtd, SUM(b.vlprice) AS vltotal
+    FROM tb_cartsproducts a
+    INNER JOIN tb_products b ON a.idproduct = b.idproduct
+    WHERE a.idcart = :idcart AND a.dtremoved IS NULL
+    GROUP BY b.idproduct, b.desproduct, b.vlprice, b.vlwidth, b.vlheight, b.vllength, b.vlweight, b.desurl
+    ORDER BY b.desproduct
+    ", [
+
+        ':idcart'=>$this->getidcart()
+
+    ]);
+
+        return Product::checkList($rows);
+
+
+}
 
 
 
