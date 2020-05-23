@@ -77,7 +77,7 @@ public function save()
         ":vlwidth"=>$this->getvlwidth(),
         ":vlheight"=>$this->getvlheight(),
         ":vllength"=>$this->getvllength(),
-        ":vlweight"=>$this->getvlweigth(),
+        ":vlweight"=>$this->getvlweight(),
         ":desurl"=>$this->getdesurl()
     
 

@@ -47,7 +47,7 @@
             </div>
             <div class="form-group">
               <label for="vlweight">Peso</label>
-              <input type="number" class="form-control" id="vlweigth" name="vlweigth" step="0.01" placeholder="0.00">
+              <input type="number" class="form-control" id="vlweight" name="vlweight" step="0.01" placeholder="0.00">
             </div>
 
             <div class="form-group">
