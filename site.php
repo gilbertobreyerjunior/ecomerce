@@ -119,7 +119,8 @@ $page = new Page();
 $page->setTpl("cart", [ //passo as informacoes do meu carrinho
 
 	'cart'=>$cart->getValues(),
-	'products'=>$cart->getProducts()
+	'products'=>$cart->getProducts(),
+	'error'=>Cart::getMsgError()
 
 ]);
 
@@ -135,12 +136,12 @@ $app->get("/cart/:idproduct/add", function($idproduct) {
 		//recuperamos o carrinho
 		$cart = Cart::getFromSession();
 
-
 			//se for definido informado o get do   qtd, entao a minha variavel qtd sera o cast do int do campo qtd, se nao e o mesmo, ira adicionar a quantidade de 1 
 			$qtd = (isset($_GET['qtd'])) ? (int)$_GET['qtd'] : 1;
 //assim ele chama o metodo quantas vezes ele for necessario ser executado, se nao passar uma vez, pelo menos uma vez ele ira adicionar
 			for ($i = 0; $i < $qtd; $i++){
 
+				
 //inserimos o metodo para adicionar ao carrinho
 				$cart->addProduct($product);
 			}
@@ -191,7 +192,17 @@ exit;
 
 					
 	});
-					
+		
+	//iremos criar uma rota que ira receber a chamada do envio do formulario com o cep para calcular 
+	$app->post("/cart/freight", function(){
 
+		$cart = Cart::getFromSession();
+	
+		$cart->setFreight($_POST['zipcode']);
+	
+		header("Location: /cart");
+		exit;
+	
+	});
 
 ?>

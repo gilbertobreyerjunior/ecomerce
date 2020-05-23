@@ -248,7 +248,6 @@ $sql->query("DELETE FROM tb_productscategories WHERE idcategory = :idcategory AN
 
 
 
-
          }
 
 

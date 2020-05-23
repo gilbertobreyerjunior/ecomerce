@@ -15,6 +15,13 @@ class Cart extends Model {
 //criamos uma constante para a sessao do carrinho
     
     const SESSION = "Cart";
+
+    //criamos uma constante para mensagem erro de carrinho
+    const SESSION_ERROR = "CartError";
+
+
+
+
     //para usarmos uma constante usamos o ::
 
     //iremos criar um metodo static para precisar saber se ele precisa inserir um carrinho novo, se temos esse carrinho, ira pegar da sessao, se a sessao foi perdida talvez acabou o tempo mas ainda eu tenho o session id que é a identificacao dessa sessao  
@@ -161,6 +168,9 @@ public function addProduct(Product $product){
 
     ]);
 
+//atualizando o total
+    $this->getCalculateTotal();
+
 }
 
 
@@ -194,8 +204,8 @@ if ($all)
         ]);
 
     }
-
-
+//atualizando o total
+$this->getCalculateTotal();
 
 }
 
@@ -225,6 +235,222 @@ public function getProducts()
 }
 
 
+// o metodo da soma de todos os itens de cada atributo  dos produtos que estao no carrinho
+public function getProductsTotals(){
+
+
+    $sql = new Sql();
+                                //ira somar, valor do produto, largura, altura, comprimento, peso,
+    $results = $sql->select("
+    SELECT SUM(vlprice) AS vlprice, SUM(vlwidth) AS vlwidth, SUM(vlheight) AS vlheight, SUM(vllength) AS vllength, SUM(vlweight) AS vlweight, COUNT(*) AS nrqtd
+    FROM tb_products a
+    INNER JOIN tb_cartsproducts b ON a.idproduct = b.idproduct
+    WHERE b.idcart = :idcart AND dtremoved IS NULL;
+", [
+    //traz o id cart
+    ':idcart'=>$this->getidcart()
+]);
+
+//iremos fazer um if para ver o que esta retornando se o count results for maior que 0 traz alguma coisa 
+if (count($results) > 0) {
+
+return $results[0]; //força para trazer na posicao 0
+
+}else {
+
+    return []; //se nao traz um array vazio
+}
+
+}
+
+
+
+
+
+//metodo para definir o frete do nosso carrinho
+public function setFreight($nrzipcode)
+{
+
+//iremos certificar que tem so os numero tirando os traços, nesse caso iremos trocar o traço caso ele exista
+    $nrzipcode = str_replace('-', '',$nrzipcode);
+
+
+
+
+
+    //pegar as informacoes totais do meu carrinho
+        $totals = $this->getProductsTotals();
+
+        //iremos verificar se tem algum produto dentro do carrinho
+    if ($totals['nrqtd'] > 0)
+    {
+        //fazemos uma regra se for menor que 2, entao vou falar que e 2 
+        if ($totals['vlheight'] < 2) $totals['vlheight'] = 2;
+        if ($totals['vllength'] < 16) $totals['vllength'] = 16;
+
+        //http_build_query — Gera a string de consulta (query) em formato URL
+        $qs = http_build_query([ //ela espera um array, entao cada variavel que tivermos iremos colocar ai dentro 
+            //passamos os dados que iremos precisar passar da webservice
+            'nCdEmpresa'=>'',
+            'sDsSenha'=>'',
+            'nCdServico'=>'40010', //o codigo do servico
+            'sCepOrigem'=>'95650000', //cep de origem
+            'sCepDestino'=>$nrzipcode, //cep destino que vem pelo nosso atrib nrzipcode
+            'nVlPeso'=>$totals['vlweight'], //peso
+            'nCdFormato'=>'1', //formato da encomenda, colocamos fixo que e formato caixa/pacote conforme a documentacao
+            'nVlComprimento'=>$totals['vllength'], //comprimento
+            'nVlAltura'=>$totals['vlheight'], //altura
+            'nVlLargura'=>$totals['vlwidth'], //largura
+            'nVlDiametro'=>'0', //colocamos 0 pois nao se aplica
+            'sCdMaoPropria'=>'S',
+            'nVlValorDeclarado'=>$totals['vlprice'], //valor total do meu carrinho
+            'sCdAvisoRecebimento'=>'S'
+        ]);
+
+//passando as informacoes para o webservice
+        //iremos usar uma funcao para ler xml que e a funcao simplexmll, pois o webservice ele retorna em xml a resposta
+    //passamos o caminho desse arquivo a url, podemos passar tanto o caminho de um endereço fisico quando uma url, passa o / e a funcao que iremos utilizar apos concatenando com as variaveis que queremos passar
+    $xml = simplexml_load_file("http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx/CalcPrecoPrazo?".$qs);
+           //iremos salvar todas essas informacoes no carrinho de compras
+
+
+            //o result sera um xml
+            $result = $xml->Servicos->cServico;
+
+                //caso retorne alguma mensagem de erro no frete o if significa se a mensagem retornar diferente de vazio
+            if ($result->MsgErro != '') {
+
+                //entao definimos a mensagem de erro
+                Cart::setMsgError($result->MsgErro);
+
+            }// nao tiver mensagem de erro ira limpar
+            else {
+
+                Cart::clearMsgError();
+            }
+
+           $this->setnrdays($result->PrazoEntrega); //iremos salvar o prazo entrega
+           $this->setvlfreight(Cart::formatValueToDecimal($result->Valor)); // iremos salvar o valor
+           $this->setdeszipcode($nrzipcode); //iremos salvar o cep
+
+
+           //iremos salvar as informacoes no banco
+           $this->save();
+           return $result;
+
+    }else {//se nao iremos zerar as informacoes   
+
+
+
+    }
+
+
+    
+
+
+}
+
+
+    //iremos criar um metodo para formatar o valor do frete
+       
+    public static function formatValueToDecimal($value):float
+    {
+            //trocando o primeiro ponto por nada
+                $value = str_replace('.', '', $value);
+                //trocando a virgula por ponto
+                return str_replace(',', '.', $value);
+        
+    }
+
+
+
+
+    //metodo para sessao setar sessao de mensagens
+
+public static function setMsgError(){
+
+
+
+    $_SESSION[Cart::SESSION_ERROR] = $msg;
+}
+
+//metodo par pegar o erro
+public static function getMsgError()
+{
+
+
+
+        //iremos validar se isso esta definido iremos pegar a mensagem que esta na sessao 
+    $msg =  (isset($_SESSION[Cart::SESSION_ERROR])) ? $_session[Cart::SESSION_ERROR] : "";
+
+    //nos limpamos a mensagem da sessao 
+    Cart::clearMsgError();
+
+    return $msg;
+
+}
+
+
+    // metodo para limpar a sessao  as informacoes
+
+
+    public static function clearMsgError()
+    {
+
+            $_SESSION[Cart::SESSION_ERROR] = NULL;
+
+
+
+    }
+
+
+//metodo para atualizar o frete automaticamente quando for add mais de um product
+
+
+public function updateFreight(){
+
+
+
+        if ($this->getdeszipcode() != '') {
+
+
+            $this->setFreight($this->getdeszipcode());
+
+        }
+}
+
+
+
+
+//metodo para trazer o total com frete e produtos o total que subtotal mais o frete
+
+//esse metodo tera a insteligencia de ver  qual e o total somar tanto o subtotal quanto o total colocar essa informacao em nosso objeto, e fazer o que o getvalues ja sabe fazer 
+public function getValues(){
+
+
+    $this->getCalculateTotal();
+
+
+    return parent::getValues();
+
+
+
+}
+
+//no metodo a seguir iremos precisar pegar as informacoes os valores totais do nosso carrinho 
+
+public function getCalculateTotal(){
+
+//tornando o carrinho dinamico atualizando o frete
+$this->updateFreight();
+
+//trazer os valores totais do carrinho
+$totals = $this->getProductsTotals();
+
+$this->setvlsubtotal($totals['vlprice']);  //soma dos meus produtos que estao dentro do carrinho
+  $this->setvltotal($totals['vlprice'] + $this->getvlfreight());     //e a soma dos produtos que estao em meu carrinho mais o valor do frete
+
+}
 
 
          }

@@ -42,7 +42,7 @@ public static function getFromSession(){
 
 
 //metodo para verificar se o usuario esta logado
-public static function checkLogin($indadmin = true){
+public static function checkLogin($inadmin = true){
 
 //iremos verificar se a sessao do usuario nao esta definida, se nao esta definida nao esta logado, ou se esta definida mas esta vazia
 
@@ -65,7 +65,7 @@ public static function checkLogin($indadmin = true){
 
             return true;
 //se nao se, ele esta logado mas nao necessariamente precisa ser um administrador
-        } else if($indadmin === false){
+        } else if($inadmin === false){
 
                 //esta logado também
 
@@ -133,18 +133,21 @@ public static function login($login, $password)
 
 }
 //metodo estatico para verificar o login passamo como parametro o inadmin = true dizendo que e admin
-public static function verifyLogin($inadmin = true){
+public static function verifyLogin($inadmin = true)
+{
 
+    if (!User::checkLogin($inadmin)) {
 
-
-    if (User::checkLogin($indadmin))  //se essa sessao nao for definida
-
-      //se nao for definida a sessao sera redirecionada para a tela de login
+        if ($inadmin) {
             header("Location: /admin/login");
-            exit;
-   
-}
+        } else {
+            header("Location: /login");
+        }
+        exit;
 
+    }
+
+}
 //criamos o metodo de logout para limpar a session iremos anular a sessao
 public static function logout() {
 
@@ -320,7 +323,7 @@ public function get($iduser)
 // $code = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_128, User::SECRET, $dataRecovery["idrecovery"], MCRYPT_MODE_ECB));
  
 // //iremos montar o nosso link que e o endereco onde ira esse codigo e esse link sera mandado por email
-// $link = "http://www.lojatech.com.br/admin/forgot/reset?code=$code"; //passamos o codigo por get entao : ?code=$code
+// $link = "http://http://projeto-ecomerce.test/admin/forgot/reset?code=$code"; //passamos o codigo por get entao : ?code=$code
 
 // ///iremos mandar por email pela classe Mailer
 //                  //passamos como parametro dentro do construtor os seguintes parametros  primeiro parametro o email, segundo parametro o nome do usuario, terceiro parametro o assunto, quarto parametro o nome do nosso template
@@ -395,11 +398,11 @@ public static function getForgot($email, $inadmin = true)
 
 				if ($inadmin === true) {
 
-					$link = "http://www.lojatech.com.br/admin/forgot/reset?code=$code";
+					$link = "http://http://projeto-ecomerce.test/admin/forgot/reset?code=$code";
 
 				} else {
 
-					$link = "http://www.lojatech.com.br/forgot/reset?code=$code";
+					$link = "http://http://projeto-ecomerce.test/forgot/reset?code=$code";
 					
 				}				
 
