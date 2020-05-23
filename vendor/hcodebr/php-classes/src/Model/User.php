@@ -21,6 +21,14 @@ class User extends Model {
     const SECRET_IV = "HcodePhp7_Secret_IV";
 
 
+   const ERROR = "UserError";
+
+   const ERROR_REGISTER = "UserErrorRegister";
+
+
+   const SUCCESS = "UserSucesss";
+
+
 //iremos verificar se essa sessao existe, se o id do usuario e maior que 0
 public static function getFromSession(){
 
@@ -28,10 +36,10 @@ public static function getFromSession(){
 
 
 //se existir essa sessao, e for inteiro esse id e esse id for maior que 0
-    if (isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0){
+if (isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0) {
 //entao iremos conseguir retornar o novo usuario
 
-        $user->setData($_SESSION[User::SESSION]);
+$user->setData($_SESSION[User::SESSION]);
 
     }
 
@@ -48,7 +56,7 @@ public static function checkLogin($inadmin = true){
 
     if (
 
-    !isset($_SESSION[User::SESSION])
+        !isset($_SESSION[User::SESSION])
     || // ou se ela for falsa
     !$_SESSION[User::SESSION]
     || // ou se o iduser nao for maior que 0
@@ -61,7 +69,7 @@ public static function checkLogin($inadmin = true){
 
     }else { //estou fazendo uma verificacao de uma rota da administracao, se eu estiver fazendo isso 
 //esse if ira acontecer so se ele acessar uma rota de administrador
-        if ($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin']){
+if ($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin'] === true) {
 
             return true;
 //se nao se, ele esta logado mas nao necessariamente precisa ser um administrador
@@ -91,16 +99,15 @@ public static function login($login, $password)
 
     $sql = new Sql();
 
-    $results = $sql->select("SELECT * FROM tb_users WHERE  deslogin = :LOGIN", array(
+    $results = $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b ON a.idperson = b.idperson WHERE a.deslogin = :LOGIN", array(
         ":LOGIN"=>$login
-
-    ));
+    )); 
 //se nao encontrou login for igual a zero
-    if (count($results) === 0)
+if (count($results) === 0)
 
     {
 //dispara um excessao como a excessao esta no escopo principal colocamos um \ para achar a Exception principal
-            throw new \Exception("Usuario inexistente ou senha inválida");
+throw new \Exception("Usuário inexistente ou senha inválida.");
 
     }
 
@@ -114,59 +121,61 @@ public static function login($login, $password)
 //iremos passar os dados do usuario
 
         $user = new User();
+
+        $data['desperson'] = utf8_encode($data['desperson']);
+
 //iremos passar o array inteiro para passar em todos os dados do banco
-       $user->setData($data);
+        $user->setData($data);
 
 //iremos definir a nossa sessao  iremos deixar o nome da constante da propria classe por questao de organizacao com o nome da propria 
        //o $user ira acessar a constante o SESSION 
     //na sessao ira ter os dados do objeto usuario so que como um array
     //ira receber os values que estao vindo da funcao getValues
-        $_SESSION[User::SESSION] = $user->getValues();
+    $_SESSION[User::SESSION] = $user->getValues();
 
-        return $user;
+    return $user;
         //se nao iremos estourar uma exception
     }else {
 
 
-        throw new \Exception("Usuario inexistente ou senha invalida");
+        throw new \Exception("Usuário inexistente ou senha inválida.");
     }
 
 }
 //metodo estatico para verificar o login passamo como parametro o inadmin = true dizendo que e admin
 public static function verifyLogin($inadmin = true)
-{
+	{
 
-    if (!User::checkLogin($inadmin)) {
+		if (!User::checkLogin($inadmin)) {
 
-        if ($inadmin) {
-            header("Location: /admin/login");
-        } else {
-            header("Location: /login");
-        }
-        exit;
+			if ($inadmin) {
+				header("Location: /admin/login");
+			} else {
+				header("Location: /login");
+			}
+			exit;
 
-    }
+		}
 
-}
+	}
 //criamos o metodo de logout para limpar a session iremos anular a sessao
-public static function logout() {
+public static function logout()
+	{
 
+		$_SESSION[User::SESSION] = NULL;
 
-$_SESSION[User::SESSION] = NULL;
-
-
-}
+	}
 
 
 //essa funcao ira ler todos os dados da tabela
 public static function listAll()
 {
 
-$sql = new Sql();
+    $sql = new Sql();
 //o usuario precisa de uma pessoa para ser criado ele tem um idperson dentro da tabela de usuarios onde temos o e-mail telefone  
                                                 //iremos unir as informacoes com o INNER JOIN 
                                                 //tabela b  utilizamos o USING se tiver o mesmo nome de campo idperson que tem nas duas tabelas e o ODER BY pela nome da pessoa  
-return $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) ORDER BY b.desperson");
+                                                return $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) ORDER BY b.desperson");
 
 }
 
@@ -180,21 +189,18 @@ public function save()
 
     //iremos chamar uma procedure, pois esssa procedure ira chamar uma pessoa primeiro e entao precisamos saber o id dessa pessoa para poder inserir na tabela de usuarios porque ele precisa do idpessoa vamos pegar o idusuario que retornou e fazer um select com os dados que estão lá no banco de dados agora, a data de cadastro, idusuario  iremos juntar tudo e trazer de volta para isso iremos precisar de uma procedure      
 
-    $results = $sql->select(" CALL sp_users_save(:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
-       ":desperson" =>$this->getdesperson(),
+    $results = $sql->select("CALL sp_users_save(:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
+        ":desperson"=>utf8_decode($this->getdesperson()),
         ":deslogin"=>$this->getdeslogin(),
-        ":despassword"=>$this->getdespassword(),
+        ":despassword"=>User::getPasswordHash($this->getdespassword()),
         ":desemail"=>$this->getdesemail(),
         ":nrphone"=>$this->getnrphone(),
         ":inadmin"=>$this->getinadmin()
-
-
-
     ));
 
 
 //so nos interessa a primeira linha do resultado, iremos setar no proprio objeto
-    $this->setData($results[0]);
+$this->setData($results[0]);
 
 }
 
@@ -207,14 +213,16 @@ public function get($iduser)
 
     $sql = new Sql();
 
-    $results = $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) WHERE a.iduser = :iduser
-    ", array (
+    $results = $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) WHERE a.iduser = :iduser", array(
         ":iduser"=>$iduser
-
-
     ));
 
-    $this->setData($results[0]);
+    $data = $results[0];
+
+    $data['desperson'] = utf8_encode($data['desperson']);
+
+
+    $this->setData($data);
 
 }
 
@@ -227,22 +235,20 @@ public function get($iduser)
 
     //iremos chamar uma procedure, pois esssa procedure ira chamar uma pessoa primeiro e entao precisamos saber o id dessa pessoa para poder inserir na tabela de usuarios porque ele precisa do idpessoa vamos pegar o idusuario que retornou e fazer um select com os dados que estão lá no banco de dados agora, a data de cadastro, idusuario  iremos juntar tudo e trazer de volta para isso iremos precisar de uma procedure      
 
-    $results = $sql->select(" CALL sp_usersupdate_save(:iduser, :desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
-       ":iduser"=>$this->getiduser(),
-        ":desperson" =>$this->getdesperson(),
-         ":deslogin"=>$this->getdeslogin(),
-         ":despassword"=>$this->getdespassword(),
-         ":desemail"=>$this->getdesemail(),
-         ":nrphone"=>$this->getnrphone(),
-         ":inadmin"=>$this->getinadmin()
- 
- 
- 
-     ));
+    $results = $sql->select("CALL sp_usersupdate_save(:iduser, :desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
+        ":iduser"=>$this->getiduser(),
+        ":desperson"=>utf8_decode($this->getdesperson()),
+        ":deslogin"=>$this->getdeslogin(),
+        ":despassword"=>User::getPasswordHash($this->getdespassword()),
+        ":desemail"=>$this->getdesemail(),
+        ":nrphone"=>$this->getnrphone(),
+        ":inadmin"=>$this->getinadmin()
+    ));
  
  
  //so nos interessa a primeira linha do resultado, iremos setar no proprio objeto
      $this->setData($results[0]);
+
     }
 
 
@@ -253,102 +259,14 @@ public function get($iduser)
 
 
         $sql = new Sql();
-        
-        $sql->query("CALL sp_users_delete(:iduser)", array(
-        ":iduser"=>$this->getiduser()
 
-
-
-        ));
+		$sql->query("CALL sp_users_delete(:iduser)", array(
+			":iduser"=>$this->getiduser()
+		));
 
 
 
     }
-
-// //iremos criar o metodo estatico que recebe como parametro o email
-//    public static function getForgot($email){
-
-// //iremos verificar se o e-mail esta cadastrado no banco de dados
-
-//     $sql = new Sql();
-
-//     $results = $sql->select("
-//     SELECT * 
-//     FROM tb_persons a
-//     INNER JOIN tb_users b USING(idperson)
-//     WHERE a.desemail = :email;
-//     ", array(
-//         ":email"=>$email
-
-//     ));
-
-// //se nao retornou nenhum email caso não encontre nenhum email disparamos uma exception
-// if (count($results) === 0)
-// {
-
-//     throw new \Exception("Não foi possivel recuperar a senha");
-
-// } else 
-// {
-    
-    
-//     //se ele encontrar
-// //iremos criar um novo registro naquela tabela de recuperacao de senha 
-
-// $data = $results[0];
-
-// $results2 = $sql->select("CALL_ sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
-//     ":iduser"=>$data["iduser"],
-//     ":desip"=>$_SERVER["REMOTE_ADDR"]
-
-// ));
-// //Se não ocorreu nenhum problema se o results  for sera ira disparar uma exception
-//  if (count($results2) === 0)
-//  {
-
-//      throw new \Exception("Não foi possivel recuperar a senha");
-
-//  }
-//  else
-// {//se tudo ok criou 
-// //Iremos receber os dados que foram gerados a partir da posicao 0
-// $dataRecovery = $results2[0];
-
-
-// //agora precisamos gerar um codigo criptografa essa procedure ira retornar o id recover que foi a chave primaria autoincrement que foi gerada de um banco de dados agora irmeos pegar esse numero encriptar isso  para o usuario nao conseguir ver que numero que e, ou alterar ou tentar buscar outros numeros possiveis e ira mandar como um link dentro do email essa criptografia
-// //primeiramente iremos transformar em base 64
-
-
-//             //usa a funcao de critografia que recebe quatro parametros, primeiro parametro o tipo de criptografia que e uma constante do php que sera em 128 bits, o segundo parametro passamos a chave de criptografia passamos a nossa constante para a criptografia, apos o terceiro parametro e os dados que queremos criptografar, o terceiro parametro a constante do modo de criptografia que tipo de criptografia que iremos usar, usamos o tipo ECB Eletronic Code book ela procura um range de dados randomicos para usar o modo de criptografia nosso  
-// $code = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_128, User::SECRET, $dataRecovery["idrecovery"], MCRYPT_MODE_ECB));
- 
-// //iremos montar o nosso link que e o endereco onde ira esse codigo e esse link sera mandado por email
-// $link = "http://http://projeto-ecomerce.test/admin/forgot/reset?code=$code"; //passamos o codigo por get entao : ?code=$code
-
-// ///iremos mandar por email pela classe Mailer
-//                  //passamos como parametro dentro do construtor os seguintes parametros  primeiro parametro o email, segundo parametro o nome do usuario, terceiro parametro o assunto, quarto parametro o nome do nosso template
-// $mailer = new Mailer($data["desemail"], $data["desperson"],  "Redefinir Senha da Hcode Store", "forgot", 
-// array(
-// //Passamos os dados que queremos renderizar dentro desse template quais são os dados que ele precisa 
-// "name"=>$data["desperson"],
-// "link"=>$link
-
-// ));
-
-// $mailer->send();
-// //fazer o return dos dados do usuario que foi recuperado
-// return $data;
-
-
-// }
-
-// }
-
-// }
-
-
-
-
 
 
 public static function getForgot($email, $inadmin = true)
@@ -462,75 +380,6 @@ public static function getForgot($email, $inadmin = true)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// public static function validForgotDecrypt($code)
-// {
-
-// //iremos fazer o processo inverso como o codigo foi criptografado por fim em base 64
-// //iremos tirar do base 64 
-// base64_decode($code);
-// //primeiro parametro o tipo de criptografia que e uma constante do php que sera em 128 bits, o segundo parametro passamos a chave de criptografia passamos a nossa constante para a criptografia, terceiro parametro os dados vem do base 64, o quarto parametro  a constante do modo de criptografia que tipo de criptografia que iremos usar, usamos o tipo ECB Eletronic Code book ela procura um range de dados randomicos para usar o modo de criptografia nosso  
-
-// //iremos receber no atrib idrecovery
-// $idrecovery = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, User::SECRET, base64_decode($code), MCRYPT_MODE_ECB);
-
-
-// $sql = new Sql();
-
-// //iremos fazer uma verificacao, se o id existe, se foi usado, se valido questao do tempo
-// $results  = $sql->select("
-// SELECT * 
-// FROM tb_userspasswordsrecoveries a
-// INNER JOIN tb_users b USING(iduser)
-// INNER JOIN tb_persons c USING(idpserson)
-// WHERE
-// a.idrecovery = :idrecovery
-// AND
-// a.dtrecovery IS NULL
-// AND
-// DATE_ADD(a.dtregister, INTERVAL 1 HOUR) >= NOW();
-// ", array(
-
-//     ":idrecovery"=>$idrecovery
-
-// ));
-// //se trazer o resultado igual a 0 dispara uma exception
-// if (count($results) === 0)
-// {
-
-//    throw new \Exception("Não foi possivel recuperar a senha"); 
-// }
-// else //se conseguiu iremos devolver os dados do usuario que recuperamos
-// {
-
-//     //iremos fazer um return do meu result na posicao 0
-//     return $results[0];
-
-// }
-
-
-
-// }
-
 //precisamos criar um metodo para dar um update no banco para dizer aquela coluna, o metodo que ira salvar que ira falar para o banco de dados que essa recuperação, já foi usado, para não recuperar novamente, mesmo que esteja dentro dessa uma hora  
 public static function setForgotUsed($idrecovery)
 {
@@ -560,24 +409,115 @@ $sql->query("UPDATE tb_users SET despassword = :password WHERE iduser = :iduser"
 }
 
 
+
+
+//metodo que ira receber a mensagem
+public static function setError($msg)
+	{
+//colocamos dentro de uma sessao, criamos uma constante ERROR para essa sessao
+        $_SESSION[User::ERROR] = $msg;
+
+    }
+    
+
+//metodo para pegar esse erro da sessao
+	public static function getError()
+	{
+//fazemos um if ternario para ver se esta definido esse erro, se ele estiver definido, se ele tambem nao e vazio, se ele tiver definido e nao for vazio, retorna a mensagem de erro, se nao retorna vazio  
+    $msg = (isset($_SESSION[User::ERROR]) && $_SESSION[User::ERROR]) ? $_SESSION[User::ERROR] : '';
+//assim que eu pego erro ja limpo para nao ficar com aquele erro sem fim na SESSION
+    User::clearError();
+
+    return $msg;
+
+    }
+
+
+    //criamos um metodo para limpar o erro 
+
+	public static function clearError()
+	{
+//colocamos a sessao igual a 0 iremos limpar o erro
+    $_SESSION[User::ERROR] = NULL;
+
+	}
+
+	public static function setSuccess($msg)
+	{
+
+		$_SESSION[User::SUCCESS] = $msg;
+
+	}
+
+	public static function getSuccess()
+	{
+
+		$msg = (isset($_SESSION[User::SUCCESS]) && $_SESSION[User::SUCCESS]) ? $_SESSION[User::SUCCESS] : '';
+
+		User::clearSuccess();
+
+		return $msg;
+
+
+	}
+
+	public static function clearSuccess()
+	{
+
+		$_SESSION[User::SUCCESS] = NULL;
+
+	}
+
+	public static function setErrorRegister($msg)
+	{
+
+		$_SESSION[User::ERROR_REGISTER] = $msg;
+
+	}
+
+
+	public static function getErrorRegister()
+	{
+
+		$msg = (isset($_SESSION[User::ERROR_REGISTER]) && $_SESSION[User::ERROR_REGISTER]) ? $_SESSION[User::ERROR_REGISTER] : '';
+
+		User::clearErrorRegister();
+
+		return $msg;
+
+	}
+
+	public static function clearErrorRegister()
+	{
+
+		$_SESSION[User::ERROR_REGISTER] = NULL;
+
+	}
+
+	public static function checkLoginExist($login)
+	{
+
+		$sql = new Sql();
+
+		$results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :deslogin", [
+			':deslogin'=>$login
+		]);
+
+		return (count($results) > 0);
+
+	}
+
+//criamos um metodo para receber a senha e criptografa-la com o password_hash
+public static function getPasswordHash($password)
+{
+
+    return password_hash($password, PASSWORD_DEFAULT, [
+        'cost'=>12
+    ]);
+
 }
 
-   
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 ?>

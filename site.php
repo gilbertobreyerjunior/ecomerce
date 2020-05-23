@@ -4,6 +4,8 @@ use \Hcode\Page;
 use \Hcode\Model\Product;
 use \Hcode\Model\Category;
 use \Hcode\Model\Cart;
+use \Hcode\Model\Address;
+use \Hcode\Model\User;
 
 
 $app->get('/', function() {
@@ -204,5 +206,85 @@ exit;
 		exit;
 	
 	});
+
+
+	//criamos a rota de checkout, essa rota só pode ser acessada se o login foi realizado
+
+	$app->get("/checkout", function(){
+
+
+			//iremos fazer a validacao do nosso login
+			//verificando se o usuario esta logado com um metodo estatico
+	User::verifyLogin(false);
+
+
+//iremos trazer o carrinho da sessao
+			$cart = Cart::getFromSession();
+			$address = new Address();
+			$page = new Page();
+
+			$page->setTpl("checkout", [
+				//pegando os valores do carrinho e do endereço
+				'cart'=>$cart->getValues(),
+				'address'=>$address->getValues()
+
+
+			]);
+
+
+
+	});
+
+	//criamos a rota de checkout, essa rota só pode ser acessada se o login foi realizado
+
+	$app->get("/login", function(){
+
+
+	
+		$page = new Page();
+//agora passamos o erro para o template
+$page->setTpl("login", [
+	'error'=>User::getError(),
+	'errorRegister'=>User::getErrorRegister(),
+//	'registerValues'=>(isset($_SESSION['registerValues'])) ? $_SESSION['registerValues'] : ['name'=>'', 'email'=>'', 'phone'=>'']
+]);
+
+});
+
+
+
+$app->post("/login", function(){
+
+try { //tenta nesse cara aqui
+
+//passamos o login do usuario e a senha dele
+User::login($_POST['login'], $_POST['password']);
+
+} catch(Exception $e) { //capturar o erro
+
+
+
+	User::setError($e->getMessage());
+}
+//redirecionamos o usuario para a proxima tela
+
+header("Location: /checkout");
+exit;
+
+});
+
+//rota para logout
+
+$app->get("/logout", function(){
+
+
+	User::logout();
+
+	header("Location: /login");
+	exit;
+
+
+})
+
 
 ?>
