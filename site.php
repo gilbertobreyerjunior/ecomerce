@@ -245,11 +245,13 @@ exit;
 //agora passamos o erro para o template
 $page->setTpl("login", [
 	'error'=>User::getError(),
-	'errorRegister'=>User::getErrorRegister(),
-//	'registerValues'=>(isset($_SESSION['registerValues'])) ? $_SESSION['registerValues'] : ['name'=>'', 'email'=>'', 'phone'=>'']
+	'errorRegister'=>User::getErrorRegister(),//iremos mostrar o erro na tela
+//iremos passar para os valores também para a tela do login, para quando eu inserir os dados de cadastro e quem sabe deixar um campo vazio nao perder esses dados
+'registerValues'=>(isset($_SESSION['registerValues'])) ? $_SESSION['registerValues'] : ['name'=>'', 'email'=>'', 'phone'=>'']
 ]);
 
 });
+
 
 
 
@@ -284,7 +286,68 @@ $app->get("/logout", function(){
 	exit;
 
 
-})
+});
+
+
+//criando a rota register
+$app->post("/register", function(){
+//Todos os dados que eu receber no meu post vou colocar em uma sessao 
+	$_SESSION['registerValues'] = $_POST;
+
+	if (!isset($_POST['name']) || $_POST['name'] == '') {
+
+		User::setErrorRegister("Preencha o seu nome.");
+		header("Location: /login");
+		exit;
+
+	}
+
+	if (!isset($_POST['email']) || $_POST['email'] == '') {
+
+		User::setErrorRegister("Preencha o seu e-mail.");
+		header("Location: /login");
+		exit;
+
+	}
+//o post não foi definido,  ou for igual a vazio mandamos uma mensagem de erro  com o setErrorRegister, apos isso redireciona para a pagina Login, e fecha o formulario
+
+	if (!isset($_POST['password']) || $_POST['password'] == '') {
+
+		User::setErrorRegister("Preencha a senha.");
+		header("Location: /login");
+		exit;
+
+	}
+//se isso for true, se esse usuario ja contem
+	if (User::checkLoginExist($_POST['email']) === true) {
+
+		User::setErrorRegister("Este endereço de e-mail já está sendo usado por outro usuário.");
+		header("Location: /login");
+		exit;
+
+	}
+
+	$user = new User();
+
+	$user->setData([
+		'inadmin'=>0,
+		'deslogin'=>$_POST['email'], //o login vem do post do email
+		'desperson'=>$_POST['name'], //o nome da pessoa
+		'desemail'=>$_POST['email'], //repete o email
+		'despassword'=>$_POST['password'], //coloca o campo senha
+		'nrphone'=>$_POST['phone']
+	]);
+ //assim salvamos o usuario
+	$user->save();
+ //autenticamos o usuario quando esta logado
+	User::login($_POST['email'], $_POST['password']);
+//e mandamos para a tela do checkout
+	header('Location: /checkout');
+	exit;
+
+});
+
+
 
 
 ?>

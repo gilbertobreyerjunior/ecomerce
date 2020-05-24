@@ -493,7 +493,7 @@ public static function setError($msg)
 		$_SESSION[User::ERROR_REGISTER] = NULL;
 
 	}
-
+//metodo para analisar se o login existe, passando como parametro o login
 	public static function checkLoginExist($login)
 	{
 
@@ -502,7 +502,7 @@ public static function setError($msg)
 		$results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :deslogin", [
 			':deslogin'=>$login
 		]);
-
+//se for maior que 0 o result quer dizer que ja tem esse login, se retornar 0 quer dizer que e false esse login nao contem
 		return (count($results) > 0);
 
 	}
