@@ -269,21 +269,109 @@ public function get($iduser)
     }
 
 
+// public static function getForgot($email, $inadmin = true)
+// 	{
+
+// 		$sql = new Sql();
+
+// 		$results = $sql->select("
+// 			SELECT *
+// 			FROM tb_persons a
+// 			INNER JOIN tb_users b USING(idperson)
+// 			WHERE a.desemail = :email;
+// 		", array(
+// 			":email"=>$email
+// 		));
+
+// 		if (count($results) === 0)
+// 		{
+
+// 			throw new \Exception("Não foi possível recuperar a senha.");
+
+// 		}
+// 		else
+// 		{
+
+// 			$data = $results[0];
+
+// 			$results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
+// 				":iduser"=>$data['iduser'],
+// 				":desip"=>$_SERVER['REMOTE_ADDR']
+// 			));
+
+// 			if (count($results2) === 0)
+// 			{
+
+// 				throw new \Exception("Não foi possível recuperar a senha.");
+
+// 			}
+// 			else
+// 			{
+
+// 				$dataRecovery = $results2[0];
+
+// 				$code = openssl_encrypt($dataRecovery['idrecovery'], 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));
+
+// 				$code = base64_encode($code);
+// 				//se for admin manda o link da administracao
+// 				if ($inadmin === true) {
+
+// 					$link = "http://lojatech.com.br/admin/forgot/reset?code=$code";
+
+// 				} else { //caso nao seja manda o outro
+
+// 					$link = "http://lojatech.com.br/forgot/reset?code=$code";
+					
+// 				}				
+
+// 				$mailer = new Mailer($data['desemail'], $data['desperson'], "Redefinir senha da Hcode Store", "forgot", array(
+// 					"name"=>$data['desperson'],
+// 					"link"=>$link
+// 				));				
+
+// 				$mailer->send();
+
+// 				return $link;
+
+// 			}
+
+// 		}
+
+// 	}
+
+
+
 public static function getForgot($email, $inadmin = true)
+{
+
+	$sql = new Sql();
+
+	$results = $sql->select("
+		SELECT *
+		FROM tb_persons a
+		INNER JOIN tb_users b USING(idperson)
+		WHERE a.desemail = :email;
+	", array(
+		":email"=>$email
+	));
+
+	if (count($results) === 0)
 	{
 
-		$sql = new Sql();
+		throw new \Exception("Não foi possível recuperar a senha.");
 
-		$results = $sql->select("
-			SELECT *
-			FROM tb_persons a
-			INNER JOIN tb_users b USING(idperson)
-			WHERE a.desemail = :email;
-		", array(
-			":email"=>$email
+	}
+	else
+	{
+
+		$data = $results[0];
+
+		$results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
+			":iduser"=>$data['iduser'],
+			":desip"=>$_SERVER['REMOTE_ADDR']
 		));
 
-		if (count($results) === 0)
+		if (count($results2) === 0)
 		{
 
 			throw new \Exception("Não foi possível recuperar a senha.");
@@ -292,52 +380,52 @@ public static function getForgot($email, $inadmin = true)
 		else
 		{
 
-			$data = $results[0];
+			$dataRecovery = $results2[0];
 
-			$results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
-				":iduser"=>$data['iduser'],
-				":desip"=>$_SERVER['REMOTE_ADDR']
-			));
+			$code = openssl_encrypt($dataRecovery['idrecovery'], 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));
 
-			if (count($results2) === 0)
-			{
+			$code = base64_encode($code);
 
-				throw new \Exception("Não foi possível recuperar a senha.");
+			if ($inadmin === true) {
 
-			}
-			else
-			{
+				$link = "http://www.lojatech.com.br/admin/forgot/reset?code=$code";
 
-				$dataRecovery = $results2[0];
+			} else {
 
-				$code = openssl_encrypt($dataRecovery['idrecovery'], 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));
+				$link = "http://www.lojatech.com.br/forgot/reset?code=$code";
+				
+			}				
 
-				$code = base64_encode($code);
+			$mailer = new Mailer($data['desemail'], $data['desperson'], "Redefinir senha da Hcode Store", "forgot", array(
+				"name"=>$data['desperson'],
+				"link"=>$link
+			));				
 
-				if ($inadmin === true) {
+			$mailer->send();
 
-					$link = "http://http://projeto-ecomerce.test/admin/forgot/reset?code=$code";
-
-				} else {
-
-					$link = "http://http://projeto-ecomerce.test/forgot/reset?code=$code";
-					
-				}				
-
-				$mailer = new Mailer($data['desemail'], $data['desperson'], "Redefinir senha da Hcode Store", "forgot", array(
-					"name"=>$data['desperson'],
-					"link"=>$link
-				));				
-
-				$mailer->send();
-
-				return $link;
-
-			}
+			return $link;
 
 		}
 
 	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
