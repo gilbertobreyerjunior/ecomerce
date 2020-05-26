@@ -6,6 +6,8 @@ use \Hcode\Model\Category;
 use \Hcode\Model\Cart;
 use \Hcode\Model\Address;
 use \Hcode\Model\User;
+use \Hcode\Model\Order;
+use \Hcode\Model\OrderStatus;
 
 
 $app->get('/', function() {
@@ -416,7 +418,69 @@ $app->post("/forgot/reset", function(){
 
 
 
+//rotas para acessar a conta
 
+$app->get("/profile", function(){
+		//forçamos o login para false que nao e admin
+	User::verifyLogin(false);
+//recuperamos o usuario na sessao
+	$user = User::getFromSession();
+
+	$page = new Page();
+//mandamos um array dentro do nosso template  com algumas informacoes
+	$page->setTpl("profile", [
+		'user'=>$user->getValues(), //passamos o usuario para o template
+		'profileMsg'=>User::getSuccess(),  //passamos a mensagem que conseguiu alterar
+		'profileError'=>User::getError()//passamos o erro para o template
+	]);
+
+});
+//criamos a rota post para salvar a edicao de um usuario
+$app->post("/profile", function(){
+	//forçamos o login para false que nao e admin
+	User::verifyLogin(false);
+//fazemos uma validacao caso o POST desperson se ele nao for definido ou for igual a vazio
+	if (!isset($_POST['desperson']) || $_POST['desperson'] === '') {
+		User::setError("Preencha o seu nome."); //dispara um erro
+		header('Location: /profile'); //redireciona para a pagina dos dados
+		exit;
+	}
+	//outro campo obrigatorio e o email
+	if (!isset($_POST['desemail']) || $_POST['desemail'] === '') {
+		User::setError("Preencha o seu e-mail.");
+		header('Location: /profile');
+		exit;
+	}
+
+	$user = User::getFromSession();
+//fazemos uma verificacao se tem um outro usuario utilizando este mesmo email login, precisamos verificar caso ele tenha alterado o email
+		//se o email foi diferente do que temos atualmente, entendemos que ele alterou
+	if ($_POST['desemail'] !== $user->getdesemail()) {
+//se ele alterou o email precisamos verificar se esse email esta sendo usado usamos o CheckLoginExist
+		if (User::checkLoginExist($_POST['desemail']) === true) {
+//se for true dispara a mensagem que o email já está cadastrado
+			User::setError("Este endereço de e-mail já está cadastrado.");
+			header('Location: /profile');
+			exit;
+
+		}
+
+	}
+
+	$_POST['inadmin'] = $user->getinadmin(); //sobreescrevemos o indadmin do post que esta vindo atualmente com o que extatamente esta no objeto que esta vindo da sessao
+	$_POST['despassword'] = $user->getdespassword(); //fazemos a mesma coisa com a senha mantendo a mesma senha
+	$_POST['deslogin'] = $_POST['desemail'];
+
+	$user->setData($_POST);
+//se ele chegou ate o save quer dizer que foi alterado
+	$user->update();
+//mensagem que conseguiu alterar os dados
+	User::setSuccess("Dados alterados com sucesso!");
+
+	header('Location: /profile');
+	exit;
+
+});
 
 
 
