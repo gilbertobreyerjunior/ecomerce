@@ -665,7 +665,7 @@ $app->get("/boleto/:idorder", function($idorder){
 	$dadosboleto["demonstrativo3"] = "";
 	$dadosboleto["instrucoes1"] = "- Sr. Caixa, cobrar multa de 2% após o vencimento";
 	$dadosboleto["instrucoes2"] = "- Receber até 10 dias após o vencimento";
-	$dadosboleto["instrucoes3"] = "- Em caso de dúvidas entre em contato conosco: suporte@hcode.com.br";
+	$dadosboleto["instrucoes3"] = "- Em caso de dúvidas entre em contato conosco: suporte@lojatech.com.br";
 	$dadosboleto["instrucoes4"] = "&nbsp; Emitido pelo sistema Projeto Loja Tech Informática";
 
 	// DADOS OPCIONAIS DE ACORDO COM O BANCO OU CLIENTE
