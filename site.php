@@ -329,8 +329,31 @@ $address->setData($_POST);
 // var_dump($address);
 $address->save();
 
-// $cart = Cart::getFromSession();
-// $cart->getCalculateTotal();
+$cart = Cart::getFromSession();
+
+ $totals = $cart->getCalculateTotal();
+
+
+$order = new Order();
+//iremos passar os dados nesse array
+$order->setData([
+
+	'idcart'=>$cart->getidcart(), //id do carrinho
+	'idaddress'=>$address->getidaddress(), //o id do endereço
+	'iduser'=>$user->getiduser(), //id o usuario
+	'idstatus'=>OrderStatus::EM_ABERTO, // qual o status do pedido
+	//'vltotal'=>$totals['vlprice'] + $cart->getvlfreight() // e o valor do frete
+	'vltotal'=>$cart->getvltotal()
+
+]);
+//salvamos o pedido
+$order->save();
+
+//redirecionamos para a nossa ordem de compra por isso concatenamos com o id da nossa order
+header("Location: /order/".$order->getidorder());
+exit;
+
+
 
 });
 
@@ -579,6 +602,105 @@ $app->post("/profile", function(){
 
 });
 
+
+//apos fazer o checkout criamos a rota order para os pedidos, para carregar o pedido e mostrar para a pessoa passamos o idorder
+$app->get("/order/:idorder", function($idorder){
+
+	User::verifyLogin(false);
+
+
+	$order = new Order();
+
+	$order->get((int)$idorder);
+
+	$page = new Page();
+
+	$page->setTpl("payment", [
+
+			'order'=>$order->getValues()
+
+	]);
+
+
+
+});
+
+
+$app->get("/boleto/:idorder", function($idorder){
+
+
+
+
+	User::verifyLogin(false);
+//carregamos o nosso pedido
+	$order = new Order();
+//fazemos o cast para inteiro
+	$order->get((int)$idorder);
+
+	// DADOS DO BOLETO PARA O SEU CLIENTE
+	$dias_de_prazo_para_pagamento = 10;
+	$taxa_boleto = 5.00;
+	$data_venc = date("d/m/Y", time() + ($dias_de_prazo_para_pagamento * 86400));  // Prazo de X dias OU informe data: "13/04/2006"; 
+			//valor total do pedido
+	$valor_cobrado = formatPrice($order->getvltotal()); // Valor - REGRA: Sem pontos na milhar e tanto faz com "." ou "," ou com 1 ou 2 ou sem casa decimal
+	$valor_cobrado = str_replace(".", "", $valor_cobrado);
+	$valor_cobrado = str_replace(",", ".",$valor_cobrado);
+	$valor_boleto=number_format($valor_cobrado+$taxa_boleto, 2, ',', '');
+										//informamos qual o pedido
+	$dadosboleto["nosso_numero"] = $order->getidorder();  // Nosso numero - REGRA: Máximo de 8 caracteres!
+	$dadosboleto["numero_documento"] = $order->getidorder();	// Num do pedido ou nosso numero
+	$dadosboleto["data_vencimento"] = $data_venc; // Data de Vencimento do Boleto - REGRA: Formato DD/MM/AAAA
+	$dadosboleto["data_documento"] = date("d/m/Y"); // Data de emissão do Boleto
+	$dadosboleto["data_processamento"] = date("d/m/Y"); // Data de processamento do boleto (opcional)
+	$dadosboleto["valor_boleto"] = $valor_boleto; 	// Valor do Boleto - REGRA: Com vírgula e sempre com duas casas depois da virgula
+
+	// DADOS DO SEU CLIENTE
+	$dadosboleto["sacado"] = $order->getdesperson(); //o get do nome da pessoa
+	$dadosboleto["endereco1"] = $order->getdesaddress() . " " . $order->getdesdistrict(); //endereco
+	$dadosboleto["endereco2"] = $order->getdescity() . " - " . $order->getdesstate() . " - " . $order->getdescountry() . " -  CEP: " . $order->getdeszipcode(); 
+
+	// INFORMACOES PARA O CLIENTE
+	$dadosboleto["demonstrativo1"] = "Pagamento de Compra na Loja Tech";
+	$dadosboleto["demonstrativo2"] = "Taxa bancária - R$ 0,00";
+	$dadosboleto["demonstrativo3"] = "";
+	$dadosboleto["instrucoes1"] = "- Sr. Caixa, cobrar multa de 2% após o vencimento";
+	$dadosboleto["instrucoes2"] = "- Receber até 10 dias após o vencimento";
+	$dadosboleto["instrucoes3"] = "- Em caso de dúvidas entre em contato conosco: suporte@hcode.com.br";
+	$dadosboleto["instrucoes4"] = "&nbsp; Emitido pelo sistema Projeto Loja Tech Informática";
+
+	// DADOS OPCIONAIS DE ACORDO COM O BANCO OU CLIENTE
+	$dadosboleto["quantidade"] = "";
+	$dadosboleto["valor_unitario"] = "";
+	$dadosboleto["aceite"] = "";		
+	$dadosboleto["especie"] = "R$";
+	$dadosboleto["especie_doc"] = "";
+
+
+	// ---------------------- DADOS FIXOS DE CONFIGURAÇÃO DO SEU BOLETO --------------- //
+
+
+	// DADOS DA SUA CONTA - ITAÚ
+	$dadosboleto["agencia"] = "1690"; // Num da agencia, sem digito
+	$dadosboleto["conta"] = "48781";	// Num da conta, sem digito
+	$dadosboleto["conta_dv"] = "2"; 	// Digito do Num da conta
+
+	// DADOS PERSONALIZADOS - ITAÚ
+	$dadosboleto["carteira"] = "175";  // Código da Carteira: pode ser 175, 174, 104, 109, 178, ou 157
+
+	// SEUS DADOS
+	$dadosboleto["identificacao"] = "Loja Tech";
+	$dadosboleto["cpf_cnpj"] = "24.700.731/0001-08";
+	$dadosboleto["endereco"] = "Rua Ademar Saraiva Leão, 234 - Alvarenga, 09853-120";
+	$dadosboleto["cidade_uf"] = "São Bernardo do Campo - SP";
+	$dadosboleto["cedente"] = "Loja Tech Informática";
+
+	// NÃO ALTERAR!
+	$path = $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . "resource" . DIRECTORY_SEPARATOR . "boletophp" . DIRECTORY_SEPARATOR . "include" . DIRECTORY_SEPARATOR;
+
+	require_once($path . "funcoes_itau.php");
+	require_once($path . "layout_itau.php");
+
+});
 
 
 ?>
