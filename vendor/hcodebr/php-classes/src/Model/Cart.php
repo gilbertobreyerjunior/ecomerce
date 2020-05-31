@@ -367,7 +367,7 @@ public function setFreight($nrzipcode)
 
     //metodo para sessao setar sessao de mensagens
 
-public static function setMsgError(){
+public static function setMsgError($msg){
 
 
 

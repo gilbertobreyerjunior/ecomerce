@@ -217,18 +217,55 @@ exit;
 
 			//iremos fazer a validacao do nosso login
 			//verificando se o usuario esta logado com um metodo estatico
-	User::verifyLogin(false);
+			User::verifyLogin(false);
 
 
-//iremos trazer o carrinho da sessao
-			$cart = Cart::getFromSession();
+
 			$address = new Address();
-			$page = new Page();
 
-			$page->setTpl("checkout", [
+			//iremos trazer o carrinho da sessao
+			$cart = Cart::getFromSession();
+
+		//verificamos se o get nao existe e aproveitar o cep que ja esta no carrinho
+				if (!isset($_GET['zipcode'])) {
+
+					$_GET['zipcode'] = $cart->getdeszipcode();
+			}
+
+
+			//iremos detectar se o cep foi mandado
+			if (isset($_GET['zipcode'])) {
+
+
+				//se foi mandado iremos carregar o objeto endereço
+					//iremos forçar para carregar esse endereço com os campos certos
+					$address->loadFromCEP($_GET['zipcode']);
+				 //setamos o cep
+				 $cart->setdeszipcode($_GET['zipcode']);
+				//salvamos
+				$cart->save();
+					//forçamos para atualizar o total do frete
+					$cart->getCalculateTotal();
+
+			}
+//fazemos as validações se existe determinado endereco se esta vazio
+				if (!$address->getdesaddress()) $address->setdesaddress('');
+				if (!$address->getdesnumber()) $address->setdesnumber('');
+				if (!$address->getdescomplement()) $address->setdescomplement('');
+				if (!$address->getdesdistrict()) $address->setdesdistrict('');
+				if (!$address->getdescity()) $address->setdescity('');
+				if (!$address->getdesstate()) $address->setdesstate('');
+				if (!$address->getdescountry()) $address->setdescountry('');
+				if (!$address->getdeszipcode()) $address->setdeszipcode('');
+			
+				$page = new Page();
+
+				$page->setTpl("checkout", [
 				//pegando os valores do carrinho e do endereço
 				'cart'=>$cart->getValues(),
-				'address'=>$address->getValues()
+				'address'=>$address->getValues(),
+				'products'=>$cart->getProducts(),
+				'error'=>Address::getMsgError() //trazemos o error a msg para o template
 
 
 			]);
@@ -236,6 +273,66 @@ exit;
 
 
 	});
+
+
+//rota post de checkout iremos salvar o endereço
+$app->post("/checkout", function(){
+
+	User::verifyLogin(false);
+
+
+// fazemos as validações
+if (!isset($_POST['zipcode']) || $_POST['zipcode'] === '') {
+	Address::setMsgError("Informe o CEP.");
+	header('Location: /checkout');
+	exit;
+}
+
+if (!isset($_POST['desaddress']) || $_POST['desaddress'] === '') {
+	Address::setMsgError("Informe o endereço.");
+	header('Location: /checkout');
+	exit;
+}
+
+if (!isset($_POST['desdistrict']) || $_POST['desdistrict'] === '') {
+	Address::setMsgError("Informe o bairro.");
+	header('Location: /checkout');
+	exit;
+}
+
+if (!isset($_POST['descity']) || $_POST['descity'] === '') {
+	Address::setMsgError("Informe a cidade.");
+	header('Location: /checkout');
+	exit;
+}
+
+if (!isset($_POST['desstate']) || $_POST['desstate'] === '') {
+	Address::setMsgError("Informe o estado.");
+	header('Location: /checkout');
+	exit;
+}
+
+if (!isset($_POST['descountry']) || $_POST['descountry'] === '') {
+	Address::setMsgError("Informe o país.");
+	header('Location: /checkout');
+	exit;
+}
+		//iremos pegar o usuario da sessao
+		$user = User::getFromSession();
+
+		$address = new Address();
+//iremos receber o post do formulario 
+$_POST['deszipcode'] = $_POST['zipcode'];
+$_POST['idperson'] = $user->getidperson();
+
+$address->setData($_POST);
+// var_dump($address);
+$address->save();
+
+// $cart = Cart::getFromSession();
+// $cart->getCalculateTotal();
+
+});
 
 	//criamos a rota de checkout, essa rota só pode ser acessada se o login foi realizado
 
