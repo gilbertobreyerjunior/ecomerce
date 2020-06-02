@@ -3,6 +3,7 @@
 use \Hcode\Model\User;
 use \Hcode\Model\Cart;
 
+
 //essa funcao iremos usar dentro do template
 function formatPrice($vlprice){
 
