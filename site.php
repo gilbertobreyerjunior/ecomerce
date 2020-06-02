@@ -756,5 +756,97 @@ $page->setTpl("profile-orders-detail", [
 });
 
 
+$app->get("/profile/change-password", function(){
+
+
+	User::verifyLogin(false);
+
+	$page = new Page();
+//passamos um array validacoes e  ao tentar alterar a senha
+	$page->setTpl("profile-change-password", [
+		'changePassError'=>User::getError(),
+		'changePassSuccess'=>User::getSuccess()
+
+	]);
+
+
+});
+
+//rota para receber o formulario alterar senha
+
+$app->post("/profile/change-password", function(){
+
+User::verifyLogin(false);
+
+
+//se a senha atual foi digitada
+
+//se existir essa senha ou se for vazio
+if (!isset($_POST['current_pass']) || $_POST['current_pass'] === '') {
+
+//exibe um erro com o setError
+	User::setError("Digite a senha atual");
+
+//redireciona para a rota de password
+	header("Location: /profile/change-password");
+	exit;
+}
+
+//se existir essa senha ou se for vazio
+if (!isset($_POST['new_pass']) || $_POST['new_pass'] === '') {
+
+//exibe um erro com o setError
+	User::setError("Digite a nova senha");
+
+//redireciona para a rota de password
+	header("Location: /profile/change-password");
+	exit;
+}
+
+//se existir essa senha ou se for vazio
+if (!isset($_POST['new_pass_confirm']) || $_POST['new_pass_confirm'] === '') {
+
+	//exibe um erro com o setError
+		User::setError("Confirme a nova senha");
+	
+	//redireciona para a rota de password
+		header("Location: /profile/change-password");
+		exit;
+	}
+
+
+	// if se a nova senha for igual a nova
+	if ($_POST['current_pass'] === $_POST['new_pass']) {
+
+
+		User::setError("A sua nova senha deve ser diferente da atual");
+		header("Location: /profile/change-password");
+		exit;
+
+	}
+	$user = User::getFromSession();
+
+	//iremos verificar se a senha do usuario esta correta
+
+	if(!password_verify($_POST['current_pass'], $user->getdespassword())) {
+
+		User::setError("A não está correta");
+		header("Location: /profile/change-password");
+		exit;
+
+	}
+
+	//so precisa alterar a senha
+
+	$user->setpassword($_POST['new_pass']);
+//atualizamos a senha
+	$user->update();
+
+	//exibimos uma mensagem de sucesso que a senha foi alterada
+	User::setSuccess("Senha alterada com sucesso");
+	header("Location: /profile/change-password");
+	exit;
+});
+
 
 ?>
