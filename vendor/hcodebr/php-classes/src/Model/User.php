@@ -409,6 +409,8 @@ public static function getForgot($email, $inadmin = true)
 
 	}
 
+
+
 }
 
 
@@ -608,7 +610,7 @@ public static function getPasswordHash($password)
 
 
 
-
+//criamos o metodo para trazer os dados do pedido
 public function getOrders()
 	{
 
@@ -626,7 +628,7 @@ public function getOrders()
 		", [
 			':iduser'=>$this->getiduser()
 		]);
-
+//retorna o results
 		return $results;
 
 	}
@@ -683,6 +685,8 @@ public function getOrders()
 		];
 
 	} 
+
+
 
 
 

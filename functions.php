@@ -37,25 +37,25 @@ function getUserName()
 	return $user->getdesperson(); //pegamos o nome do usuario
 
 }
-
+//criamos o metodo para pegar a quantidade no carrinho
 function getCartNrQtd()
 {
-
+//trazemos a sessão do carrinho
 	$cart = Cart::getFromSession();
-
+//trazemos o valor total dos produtos que é a soma dos produtos no carrinho
 	$totals = $cart->getProductsTotals();
-
+//retornamos o totals da quantidade
 	return $totals['nrqtd'];
 
 }
-
+//metodo para pegar a quantidade total do carrinho
 function getCartVlSubTotal()
 {
 
 	$cart = Cart::getFromSession();
-
+//pegamos quais os produtos que tem no carrinho, essa funcao soma todos os produtos que estao no carrinho
 	$totals = $cart->getProductsTotals();
-
+//retornamos o valor total sem o frete
 	return formatPrice($totals['vlprice']);
 
 }

@@ -331,7 +331,7 @@ $address->save();
 
 $cart = Cart::getFromSession();
 
- $totals = $cart->getCalculateTotal();
+ $cart->getCalculateTotal();
 
 
 $order = new Order();
@@ -694,13 +694,67 @@ $app->get("/boleto/:idorder", function($idorder){
 	$dadosboleto["cidade_uf"] = "São Bernardo do Campo - SP";
 	$dadosboleto["cedente"] = "Loja Tech Informática";
 
-	// NÃO ALTERAR!
+	
 	$path = $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . "resource" . DIRECTORY_SEPARATOR . "boletophp" . DIRECTORY_SEPARATOR . "include" . DIRECTORY_SEPARATOR;
 
 	require_once($path . "funcoes_itau.php");
 	require_once($path . "layout_itau.php");
 
 });
+
+
+//visualização para o usuario do que ele comprou
+$app->get("/profile/orders", function(){
+
+	//se está logada dizemos que nao precisa fazer a verificacao
+		User::verifyLogin(false);
+
+
+			$user = User::getFromSession();
+
+
+			$page = new Page();
+			//definindo o template
+			$page->setTpl("profile-orders",[
+			//passando um array das informacoes desse template
+		
+				'orders'=>$user->getOrders()
+		]);
+});
+
+
+
+//detalhes do pedido
+$app->get("/profile/orders/:idorder", function($idorder){
+
+User::verifyLogin(false);
+
+$order = new Order();
+
+$order->get((int)$idorder);
+
+
+$cart = new Cart();
+
+
+$cart->get((int)$order->getidcart());
+
+
+$cart->getCalculateTotal();
+
+$page = new Page();
+
+$page->setTpl("profile-orders-detail", [
+
+		'order'=>$order->getValues(),
+		'cart'=>$cart->getValues(),
+		'products'=>$cart->getProducts()
+
+]);
+
+
+});
+
 
 
 ?>
