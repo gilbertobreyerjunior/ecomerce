@@ -14,7 +14,7 @@ class OrderStatus extends Model {
 	const AGUARDANDO_PAGAMENTO = 2;
 	const PAGO = 3;
 	const ENTREGUE = 4;
-//ira listar os pedidos ordenando pelos status
+//ira listar todos status
 	public static function listAll()
 	{
 

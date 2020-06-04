@@ -1,14 +1,14 @@
-<!-- Content Wrapper. Contains page content -->
+<?php if(!class_exists('Rain\Tpl')){exit;}?><!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
     <h1>
-        Pedido N°{$order.idorder}
+        Pedido N°<?php echo htmlspecialchars( $order["idorder"], ENT_COMPAT, 'UTF-8', FALSE ); ?>
     </h1>
     <ol class="breadcrumb">
         <li><a href="/admin"><i class="fa fa-dashboard"></i> Home</a></li>
         <li><a href="/admin/orders">Pedidos</a></li>
-        <li class="active"><a href="/admin/orders/{$order.idorder}">Pedido N°{$order.idorder}</a></li>
+        <li class="active"><a href="/admin/orders/<?php echo htmlspecialchars( $order["idorder"], ENT_COMPAT, 'UTF-8', FALSE ); ?>">Pedido N°<?php echo htmlspecialchars( $order["idorder"], ENT_COMPAT, 'UTF-8', FALSE ); ?></a></li>
     </ol>
     </section>
 
@@ -18,7 +18,7 @@
             <div class="col-xs-12">
             <h2 class="page-header">
                 <img src="/resource/site/img/logo.png" alt="Logo">
-                <small class="pull-right">Date: {function="date('d/m/Y')"}</small>
+                <small class="pull-right">Date: <?php echo date('d/m/Y'); ?></small>
             </h2>
             </div>
             <!-- /.col -->
@@ -39,19 +39,19 @@
             <div class="col-sm-4 invoice-col">
             Para
             <address>
-                <strong>{$order.desperson}</strong><br>
-                {$order.desaddress}, {$order.descomplement}<br>
-                {$order.descity} - {$order.desstate}<br>
-                {if="$order.nrphone && $order.nrphone!='0'"}Telefone: {$order.nrphone}<br>{/if}
-                E-mail: {$order.desemail}
+                <strong><?php echo htmlspecialchars( $order["desperson"], ENT_COMPAT, 'UTF-8', FALSE ); ?></strong><br>
+                <?php echo htmlspecialchars( $order["desaddress"], ENT_COMPAT, 'UTF-8', FALSE ); ?>, <?php echo htmlspecialchars( $order["descomplement"], ENT_COMPAT, 'UTF-8', FALSE ); ?><br>
+                <?php echo htmlspecialchars( $order["descity"], ENT_COMPAT, 'UTF-8', FALSE ); ?> - <?php echo htmlspecialchars( $order["desstate"], ENT_COMPAT, 'UTF-8', FALSE ); ?><br>
+                <?php if( $order["nrphone"] && $order["nrphone"]!='0' ){ ?>Telefone: <?php echo htmlspecialchars( $order["nrphone"], ENT_COMPAT, 'UTF-8', FALSE ); ?><br><?php } ?>
+                E-mail: <?php echo htmlspecialchars( $order["desemail"], ENT_COMPAT, 'UTF-8', FALSE ); ?>
             </address>
             </div>
             <!-- /.col -->
             <div class="col-sm-4 invoice-col">
-            <b>Pedido #{$order.idorder}</b><br>
+            <b>Pedido #<?php echo htmlspecialchars( $order["idorder"], ENT_COMPAT, 'UTF-8', FALSE ); ?></b><br>
             <br>
-            <b>Emitido em:</b> {function="formatDate($order.dtregister)"}<br>
-            <b>Pago em:</b> {function="formatDate($order.dtregister)"}
+            <b>Emitido em:</b> <?php echo formatDate($order["dtregister"]); ?><br>
+            <b>Pago em:</b> <?php echo formatDate($order["dtregister"]); ?>
             </div>
             <!-- /.col -->
         </div>
@@ -70,14 +70,14 @@
                 </tr>
                 </thead>
                 <tbody>
-                {loop="$products"}
+                <?php $counter1=-1;  if( isset($products) && ( is_array($products) || $products instanceof Traversable ) && sizeof($products) ) foreach( $products as $key1 => $value1 ){ $counter1++; ?>
                 <tr>
-                    <td>{$value.nrqtd}</td>
-                    <td>{$value.desproduct}</td>
-                    <td>{$value.idproduct}</td>
-                    <td>R${function="format_real($order.vltotal)"}</td>
+                    <td><?php echo htmlspecialchars( $value1["nrqtd"], ENT_COMPAT, 'UTF-8', FALSE ); ?></td>
+                    <td><?php echo htmlspecialchars( $value1["desproduct"], ENT_COMPAT, 'UTF-8', FALSE ); ?></td>
+                    <td><?php echo htmlspecialchars( $value1["idproduct"], ENT_COMPAT, 'UTF-8', FALSE ); ?></td>
+                    <td>R$<?php echo format_real($order["vltotal"]); ?></td>
                 </tr>
-                {/loop}
+                <?php } ?>
                 </tbody>
             </table>
             </div>
@@ -119,15 +119,15 @@
                 <table class="table">
                 <tbody><tr>
                     <th style="width:50%">Subtotal:</th>
-                    <td>R${function="formatPrice($cart.vlsubtotal)"}</td>
+                    <td>R$<?php echo formatPrice($cart["vlsubtotal"]); ?></td>
                 </tr>
                 <tr>
                     <th>Frete:</th>
-                    <td>R${function="formatPrice($cart.vlfreight)"}</td>
+                    <td>R$<?php echo formatPrice($cart["vlfreight"]); ?></td>
                 </tr>
                 <tr>
                     <th>Total:</th>
-                    <td>R${function="formatPrice($cart.vltotal)"}</td>
+                    <td>R$<?php echo formatPrice($cart["vltotal"]); ?></td>
                 </tr>
                 </tbody></table>
             </div>
@@ -139,10 +139,10 @@
         <!-- this row will not appear when printing -->
         <div class="row no-print">
             <div class="col-xs-12">
-                <button type="button" onclick="window.location.href = '/admin/orders/{$order.idstatus}/status'" class="btn btn-default pull-left" style="margin-left: 5px;">
+                <button type="button" onclick="window.location.href = '/admin/orders/<?php echo htmlspecialchars( $order["idstatus"], ENT_COMPAT, 'UTF-8', FALSE ); ?>/status'" class="btn btn-default pull-left" style="margin-left: 5px;">
                     <i class="fa fa-pencil"></i> Editar Status
                 </button>
-                <button type="button" onclick="window.open('/boleto/{$order.idstatus}')" class="btn btn-default pull-left" style="margin-left: 5px;">
+                <button type="button" onclick="window.open('/boleto/<?php echo htmlspecialchars( $order["idstatus"], ENT_COMPAT, 'UTF-8', FALSE ); ?>')" class="btn btn-default pull-left" style="margin-left: 5px;">
                     <i class="fa fa-barcode"></i> Boleto
                 </button>
 

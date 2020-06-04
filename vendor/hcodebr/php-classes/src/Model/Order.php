@@ -98,8 +98,66 @@ public function delete()
 
 }
 
+            //adicionamos o :Cart pois ira retornar uma instancia da classe Cart
+public function getCart():Cart
+{
 
+$cart = new Cart();
 
+$cart->get((int)$this->getidcart());
+return $cart;
+
+}
+
+public static function setError($msg)
+{
+
+	$_SESSION[Order::ERROR] = $msg;
+
+}
+
+public static function getError()
+{
+
+	$msg = (isset($_SESSION[Order::ERROR]) && $_SESSION[Order::ERROR]) ? $_SESSION[Order::ERROR] : '';
+
+	Order::clearError();
+
+	return $msg;
+
+}
+
+public static function clearError()
+{
+
+	$_SESSION[Order::ERROR] = NULL;
+
+}
+
+public static function setSuccess($msg)
+{
+
+	$_SESSION[Order::SUCCESS] = $msg;
+
+}
+
+public static function getSuccess()
+{
+
+	$msg = (isset($_SESSION[Order::SUCCESS]) && $_SESSION[Order::SUCCESS]) ? $_SESSION[Order::SUCCESS] : '';
+
+	Order::clearSuccess();
+
+	return $msg;
+
+}
+
+public static function clearSuccess()
+{
+
+	$_SESSION[Order::SUCCESS] = NULL;
+
+}
 
 
 
