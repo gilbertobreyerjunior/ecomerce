@@ -9,13 +9,55 @@ $app->get('/admin/users', function() {
 
 	//verificando se o usuario esta logado com um metodo estatico
 User::verifyLogin();
-//Users ira receber listAll de usuarios
-$users = User::listAll();
+
+//se o atrib existir vem ela mesmo, se ela nao tiver traz vazio
+$search = (isset($_GET['search'])) ? $_GET['search'] : "";
+//se for definido na minha url um page entao sera o int desse page, se nao for definida a minha pagina atual 
+$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+
+
+
+//se o search for diferente de vazio iremos fazer a chamada de um metodo
+	if ($search != '') {
+
+		$pagination = User::getPageSearch($search, $page, 1);
+		
+	} else {
+//se nao 
+//pagination ira receber o getPage de usuarios a pagina atual e a 1 mesmo
+$pagination = User::getPage($page);
+
+	}
+
+//criamos um array chamado pages para poder adicionar elementos nele
+$pages = [];
+
+//fazemos um for para percorrer essas pages
+for ($x = 0; $x < $pagination['pages']; $x++)
+{
+
+//fazemos um array push para adicionar essas informacoes dentro do atrib pages que e o novo array
+	array_push($pages, [
+		'href'=>'/admin/users?'.http_build_query([
+			'page'=>$x+1, //a pagina
+			'search'=>$search //o nosso search
+
+		]),
+		'text'=>$x+1 //e o texto que e o numero da pagina colocamos +1 para iniciar na pagina 1
+	]);
+
+
+
+}
+
+
+
 $page = new PageAdmin();
 //criamos um array passamos uma chave chamada users com o valor da minha variavel users que é uma lista com um monte de array dentro que e a nossa lista de usuarios
 $page->setTpl("users", array(
-	"users"=>$users
-	
+	"users"=>$pagination['data'],
+	"search"=>$search,
+	"pages"=>$pages
 ));
 
 });

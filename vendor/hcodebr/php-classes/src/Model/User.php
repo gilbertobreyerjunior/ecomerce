@@ -632,7 +632,7 @@ public function getOrders()
 		return $results;
 
 	}
-
+//metodo para pegar a pagina
 	public static function getPage($page = 1, $itemsPerPage = 10)
 	{
 
@@ -645,30 +645,30 @@ public function getOrders()
 			FROM tb_users a 
 			INNER JOIN tb_persons b USING(idperson) 
 			ORDER BY b.desperson
-			LIMIT $start, $itemsPerPage;
+			LIMIT $start, $itemsPerPage; //traz itens por pagina
 		");
 
 		$resultTotal = $sql->select("SELECT FOUND_ROWS() AS nrtotal;");
 
 		return [
-			'data'=>$results,
-			'total'=>(int)$resultTotal[0]["nrtotal"],
-			'pages'=>ceil($resultTotal[0]["nrtotal"] / $itemsPerPage)
+			'data'=>$results, //tem todas as linhas nessa consulta
+			'total'=>(int)$resultTotal[0]["nrtotal"], //tem o numero total de registro
+			'pages'=>ceil($resultTotal[0]["nrtotal"] / $itemsPerPage) //tem o total de paginas
 		];
 
 	}
-
+//metodo para trazer as pessoas pela busca
 	public static function getPageSearch($search, $page = 1, $itemsPerPage = 10)
 	{
 
 		$start = ($page - 1) * $itemsPerPage;
 
 		$sql = new Sql();
-
+//trazendo pelo email e login
 		$results = $sql->select("
 			SELECT SQL_CALC_FOUND_ROWS *
 			FROM tb_users a 
-			INNER JOIN tb_persons b USING(idperson)
+			INNER JOIN tb_persons b USING(idperson) 
 			WHERE b.desperson LIKE :search OR b.desemail = :search OR a.deslogin LIKE :search
 			ORDER BY b.desperson
 			LIMIT $start, $itemsPerPage;
