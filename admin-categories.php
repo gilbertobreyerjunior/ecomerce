@@ -8,32 +8,46 @@ use \Hcode\Page;
 
 $app->get("/admin/categories", function(){
 
-	//verificando se o usuario esta logado com um metodo estatico
 	User::verifyLogin();
 
-//A classe category acessa o metodo estatico listAll
-$categories = Category::listAll();
+	$search = (isset($_GET['search'])) ? $_GET['search'] : "";
+	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-$page = new PageAdmin();
-//abrindo o template categories
-$page->setTpl("categories",[
-				//iremos receber essa lista esse array
-'categories'=>$categories
-]);
+	if ($search != '') {
+
+		$pagination = Category::getPageSearch($search, $page);
+
+	} else {
+
+		$pagination = Category::getPage($page);
+
+	}
+
+	$pages = [];
+
+	for ($x = 0; $x < $pagination['pages']; $x++)
+	{
+
+		array_push($pages, [
+			'href'=>'/admin/categories?'.http_build_query([
+				'page'=>$x+1, //a pagina
+				'search'=>$search //o search
+			]),
+			'text'=>$x+1 //e o texto do numero da pagina
+		]);
+
+	}
+
+	$page = new PageAdmin();
+
+	$page->setTpl("categories", [
+		"categories"=>$pagination['data'],
+		"search"=>$search,
+		"pages"=>$pages
+	]);	
 
 
 });
-
-$app->get("/admin/categories/create", function(){
-	
-	//verificando se o usuario esta logado com um metodo estatico
-	User::verifyLogin();
-
-$page = new PageAdmin();
-$page->setTpl("categories-create");
-
-});
-
 
 $app->post("/admin/categories/create", function(){
 
