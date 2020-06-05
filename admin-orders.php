@@ -116,17 +116,43 @@ $app->get("/admin/orders/:idorder", function($idorder){
 //rota para listar os pedidos
 $app->get("/admin/orders", function(){
 
-    User::verifyLogin();
+	User::verifyLogin();
 
-    $page = new PageAdmin();
+	$search = (isset($_GET['search'])) ? $_GET['search'] : "";
+	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-//passamos um array com a lista dos pedidos, passamos a funcao listall como value para trazer os pedidos
-    $page->setTpl("orders", [
-       "orders"=>Order::listAll()
+	if ($search != '') {
 
+		$pagination = Order::getPageSearch($search, $page);
 
-    ]);
+	} else {
 
+		$pagination = Order::getPage($page);
+
+	}
+
+	$pages = [];
+
+	for ($x = 0; $x < $pagination['pages']; $x++)
+	{
+
+		array_push($pages, [
+			'href'=>'/admin/orders?'.http_build_query([
+				'page'=>$x+1, //a page
+				'search'=>$search // o nosso search
+			]),
+			'text'=>$x+1 // e o texto do numero da pagina
+		]);
+
+	}
+
+	$page = new PageAdmin();
+
+	$page->setTpl("orders", [
+		"orders"=>$pagination['data'],
+		"search"=>$search,
+		"pages"=>$pages
+	]);
 
 });
 
