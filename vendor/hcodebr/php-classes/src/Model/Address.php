@@ -77,12 +77,12 @@ public function loadFromCEP($nrcep) {
 
                 $sql = new Sql();
                                         //fazemos o select dessa nossa procedure trazendo todos os dados, iremos salvar todos os dados que estão vindo pela procedure
-                 $results = $sql->select("CALL sp_addresses_save(:idaddress, :idperson, :desaddress, :descomplement, :descity, :desstate, :descountry, :deszipcode, :desdistrict)", [
+                 $results = $sql->select("CALL sp_addresses_save(:idaddress, :idperson, :desaddress, :desnumber, :descomplement, :descity, :desstate, :descountry, :deszipcode, :desdistrict)", [
                 //passamos o bind dos nossos parametros
                 ':idaddress'=>$this->getidaddress(),
                 ':idperson'=>$this->getidperson(),
                 ':desaddress'=>utf8_decode($this->getdesaddress()),
-                //':desnumber'=>$this->getdesnumber(),
+                ':desnumber'=>$this->getdesnumber(),
                 ':descomplement'=>utf8_decode($this->getdescomplement()),
                 ':descity'=>utf8_decode($this->getdescity()),
                 ':desstate'=>utf8_decode($this->getdesstate()),

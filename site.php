@@ -326,7 +326,7 @@ $_POST['deszipcode'] = $_POST['zipcode'];
 $_POST['idperson'] = $user->getidperson();
 
 $address->setData($_POST);
-// var_dump($address);
+
 $address->save();
 
 $cart = Cart::getFromSession();
@@ -346,6 +346,7 @@ $order->setData([
 	'vltotal'=>$cart->getvltotal()
 
 ]);
+//var_dump($order);
 //salvamos o pedido
 $order->save();
 
